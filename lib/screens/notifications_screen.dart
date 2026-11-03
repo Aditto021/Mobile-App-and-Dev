@@ -14,7 +14,13 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Iconsax.flash, AppColors.magenta, 'Flash Sale is live ⚡', 'Up to 25% off phones & gadgets — ends soon.', '2m'),
+      (
+        Iconsax.flash,
+        AppColors.magenta,
+        'Flash Sale is live ⚡',
+        'Up to 25% off phones & gadgets — ends soon.',
+        '2m',
+      ),
       (
         Iconsax.ticket_discount,
         AppColors.gold,
@@ -61,16 +67,29 @@ class NotificationsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(n.$3, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                Text(
+                                  n.$3,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                                 const SizedBox(height: 2),
                                 Text(
                                   n.$4,
-                                  style: Txt.small.copyWith(color: AppColors.textDim, fontWeight: FontWeight.w400),
+                                  style: Txt.small.copyWith(
+                                    color: AppColors.textDim,
+                                    fontWeight: FontWeight.w400,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          Text(n.$5, style: Txt.small.copyWith(color: AppColors.textFaint)),
+                          Text(
+                            n.$5,
+                            style: Txt.small.copyWith(
+                              color: AppColors.textFaint,
+                            ),
+                          ),
                         ],
                       ),
                     ),

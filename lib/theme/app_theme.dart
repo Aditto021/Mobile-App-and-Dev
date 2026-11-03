@@ -7,10 +7,10 @@ class AppColors {
   static const void1 = Color(0xFF100F1C);
   static const void2 = Color(0xFF1B192B);
 
-  static const violet = Color(0xFF7C3AED);
+  static const violet = Color(0xFF7955C7);
   static const violetLight = Color(0xFFA78BFA);
   static const lavender = Color(0xFFDDD6FE);
-  static const magenta = Color(0xFFD946EF);
+  static const magenta = Color(0xFFB16FAD);
   static const indigo = Color(0xFF4F46E5);
   static const cyan = Color(0xFF22D3EE);
   static const champagne = Color(0xFFF3C98B);
@@ -30,7 +30,7 @@ class AppColors {
   static const brandGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF8054F6), Color(0xFFB45CE4), Color(0xFF55C6D8)],
+    colors: [Color(0xFF7052B6), Color(0xFF9670C7)],
   );
 
   static const auroraGradient = LinearGradient(
@@ -45,7 +45,7 @@ class AppColors {
   );
 
   static const textGradient = LinearGradient(
-    colors: [Color(0xFFFFF7E9), Color(0xFFD8C7FF), Color(0xFFFFB8D8)],
+    colors: [Color(0xFFFFF7E9), Color(0xFFDDD6FE)],
   );
 }
 
@@ -73,6 +73,42 @@ class AppTheme {
       highlightColor: Colors.transparent,
     );
     return base.copyWith(
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.void2,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: AppColors.glassBorder),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: AppColors.glassBorder,
+        thickness: 1,
+        space: 28,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          backgroundColor: AppColors.violet,
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(
+            fontFamily: fontFamily,
+            fontWeight: FontWeight.w600,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.lavender,
+          minimumSize: const Size(44, 44),
+        ),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.lavender,
+      ),
       textTheme: base.textTheme.apply(
         bodyColor: AppColors.text,
         displayColor: AppColors.text,
@@ -174,14 +210,15 @@ class _NebulaTransitions extends PageTransitionsBuilder {
 class Txt {
   static const h1 = TextStyle(
     fontSize: 28,
-    fontWeight: FontWeight.w800,
-    height: 1.15,
-    letterSpacing: -0.5,
+    fontWeight: FontWeight.w700,
+    height: 1.2,
+    letterSpacing: -0.65,
   );
   static const h2 = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.2,
+    letterSpacing: -0.4,
+    height: 1.3,
   );
   static const h3 = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
   static const body = TextStyle(
@@ -189,7 +226,11 @@ class Txt {
     fontWeight: FontWeight.w400,
     height: 1.5,
   );
-  static const small = TextStyle(fontSize: 12, fontWeight: FontWeight.w500);
+  static const small = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    height: 1.45,
+  );
   static const bangla = TextStyle(
     fontFamily: 'HindSiliguri',
     fontWeight: FontWeight.w700,

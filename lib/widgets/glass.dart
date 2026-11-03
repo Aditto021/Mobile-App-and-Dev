@@ -147,9 +147,9 @@ BoxDecoration glassDecoration(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withValues(alpha: 0.20),
-                AppColors.violetLight.withValues(alpha: 0.12),
-                AppColors.champagne.withValues(alpha: 0.15),
+                Colors.white.withValues(alpha: 0.14),
+                AppColors.violetLight.withValues(alpha: 0.08),
+                AppColors.champagne.withValues(alpha: 0.10),
               ],
             ),
           )
@@ -373,13 +373,17 @@ class GlowButton extends StatelessWidget {
             Icon(icon, size: 20, color: Colors.white),
             const SizedBox(width: 10),
           ],
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 15.5,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
-              color: Colors.white,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
@@ -489,7 +493,12 @@ class SectionHeader extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 9),
-                    Text(title, style: Txt.h2.copyWith(letterSpacing: -0.45)),
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: Txt.h2.copyWith(letterSpacing: -0.45),
+                      ),
+                    ),
                   ],
                 ),
                 if (subtitle != null)

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../config/brand.dart';
 import '../data/shop.dart';
+import '../services/app_updates.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand.dart';
 import '../widgets/common.dart';
@@ -58,8 +59,14 @@ class AccountScreen extends StatelessWidget {
       (
         Iconsax.info_circle,
         'About ${Brand.appName}',
-        'Version 1.0.0',
+        'Version and app information',
         () => _about(context),
+      ),
+      (
+        Iconsax.refresh,
+        'App updates',
+        'Check for the latest version',
+        () => checkForAppUpdates(context),
       ),
     ];
     return ListView(
@@ -76,22 +83,20 @@ class AccountScreen extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   Container(
-                        width: 76,
-                        height: 76,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: SweepGradient(
-                            colors: [
-                              AppColors.violet,
-                              AppColors.magenta,
-                              AppColors.cyan,
-                              AppColors.violet,
-                            ],
-                          ),
-                        ),
-                      )
-                      .animate(onPlay: (c) => c.repeat())
-                      .rotate(duration: 6.seconds),
+                    width: 76,
+                    height: 76,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: SweepGradient(
+                        colors: [
+                          AppColors.violet,
+                          AppColors.magenta,
+                          AppColors.cyan,
+                          AppColors.violet,
+                        ],
+                      ),
+                    ),
+                  ),
                   Container(
                     width: 68,
                     height: 68,
@@ -116,46 +121,47 @@ class AccountScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: Txt.h2),
+                    Text(
+                      name,
+                      style: Txt.h2,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     if ((shop.userEmail ?? '').isNotEmpty)
                       Text(
                         shop.userEmail!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Txt.small.copyWith(color: AppColors.textDim),
                       ),
                     const SizedBox(height: 8),
                     Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFBBF24), Color(0xFFF472B6)],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF3C98B), Color(0xFFE4C7B1)],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Iconsax.crown, size: 13, color: Colors.black),
+                          SizedBox(width: 5),
+                          Text(
+                            'Made for you',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
                             ),
-                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Iconsax.crown,
-                                size: 13,
-                                color: Colors.black,
-                              ),
-                              SizedBox(width: 5),
-                              Text(
-                                'Galaxy member',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                        .animate(onPlay: (c) => c.repeat())
-                        .shimmer(delay: 2.seconds, duration: 1200.ms),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -434,8 +440,17 @@ class AccountScreen extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          'CSE 464 · Group G-10 · Version 1.0.0',
+          'CSE 464 · Group G-10',
           style: Txt.small.copyWith(color: AppColors.textFaint),
+        ),
+        FutureBuilder<String>(
+          future: AppUpdates.version,
+          builder: (context, snapshot) => Text(
+            snapshot.hasData && snapshot.data!.isNotEmpty
+                ? 'Version ${snapshot.data}'
+                : '',
+            style: Txt.small,
+          ),
         ),
       ],
     ),

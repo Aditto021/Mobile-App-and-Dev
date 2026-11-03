@@ -12,7 +12,7 @@ final ValueNotifier<Offset> nebulaParallax = ValueNotifier(Offset.zero);
 
 /// When true the nebula drifts gently behind the catalogue. The effect is
 /// intentionally restrained and capped at 30 fps so products remain the focus.
-final ValueNotifier<bool> liveNebula = ValueNotifier(true);
+final ValueNotifier<bool> liveNebula = ValueNotifier(false);
 
 /// How much taller than the screen the baked image is, so parallax can
 /// slide it without revealing an edge.
@@ -41,12 +41,12 @@ class _SpaceBackgroundState extends State<SpaceBackground>
   final ValueNotifier<double> _time = ValueNotifier(12);
   Duration _lastPaint = Duration.zero;
   bool _reduceMotion = false;
+  bool _shaderLoading = false;
   bool get _isLive => liveNebula.value && !_reduceMotion;
 
   @override
   void initState() {
     super.initState();
-    _loadShader();
     _ticker = createTicker((elapsed) {
       // Slow atmospheric motion does not need to update at display refresh.
       if (elapsed - _lastPaint < const Duration(milliseconds: 33)) return;
@@ -71,6 +71,7 @@ class _SpaceBackgroundState extends State<SpaceBackground>
 
   void _onLiveChanged() {
     if (_isLive) {
+      if (_shader == null && !_shaderLoading) _loadShader();
       if (!_ticker.isActive) _ticker.start();
     } else {
       _ticker.stop();
@@ -79,12 +80,15 @@ class _SpaceBackgroundState extends State<SpaceBackground>
   }
 
   Future<void> _loadShader() async {
+    _shaderLoading = true;
     try {
       final program = await ui.FragmentProgram.fromAsset('shaders/nebula.frag');
       if (!mounted) return;
       setState(() => _shader = program.fragmentShader());
     } catch (e) {
       debugPrint('Nebula shader unavailable, using fallback: $e');
+    } finally {
+      _shaderLoading = false;
     }
   }
 
@@ -171,14 +175,9 @@ class _SpaceBackgroundState extends State<SpaceBackground>
         ),
         Positioned.fill(
           child: IgnorePointer(
-            child: Opacity(
-              opacity: 0.13,
-              child: Image.asset(
-                'assets/brand/rickshaw_art_bg.png',
-                fit: BoxFit.contain,
-                alignment: Alignment.center,
-                filterQuality: FilterQuality.medium,
-              ),
+            child: const Opacity(
+              opacity: 0.14,
+              child: CustomPaint(painter: _RickshawArtPainter()),
             ),
           ),
         ),
@@ -418,7 +417,7 @@ class _LivePainter extends CustomPainter {
 class _FallbackPainter extends CustomPainter {
   const _FallbackPainter();
 
-  static final _stars = List.generate(140, (i) {
+  static final _stars = List.generate(64, (i) {
     final r = math.Random(i * 31 + 7);
     return (Offset(r.nextDouble(), r.nextDouble()), r.nextDouble());
   });
@@ -454,10 +453,10 @@ class _FallbackPainter extends CustomPainter {
     );
     final paint = Paint();
     for (final (o, s) in _stars) {
-      paint.color = Colors.white.withValues(alpha: 0.16 + 0.34 * s);
+      paint.color = Colors.white.withValues(alpha: 0.04 + 0.12 * s);
       canvas.drawCircle(
         Offset(o.dx * size.width, o.dy * size.height),
-        0.5 + s * 1.2,
+        0.4 + s * 0.65,
         paint,
       );
     }

@@ -47,9 +47,12 @@ class ProductListScreen extends StatefulWidget {
   final String? categoryId;
   const ProductListScreen._(this.source, [this.categoryId]);
 
-  factory ProductListScreen.category(String id) => ProductListScreen._(ListSource.category, id);
-  factory ProductListScreen.flash() => const ProductListScreen._(ListSource.flash);
-  factory ProductListScreen.topRated() => const ProductListScreen._(ListSource.topRated);
+  factory ProductListScreen.category(String id) =>
+      ProductListScreen._(ListSource.category, id);
+  factory ProductListScreen.flash() =>
+      const ProductListScreen._(ListSource.flash);
+  factory ProductListScreen.topRated() =>
+      const ProductListScreen._(ListSource.topRated);
 
   @override
   State<ProductListScreen> createState() => _ProductListScreenState();
@@ -62,7 +65,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget build(BuildContext context) {
     final shop = context.watch<Shop>();
     final (title, base) = switch (widget.source) {
-      ListSource.category => (categoryOf(widget.categoryId!).name, shop.inCategory(widget.categoryId!)),
+      ListSource.category => (
+        categoryOf(widget.categoryId!).name,
+        shop.inCategory(widget.categoryId!),
+      ),
       ListSource.flash => ('⚡ Flash Sale', shop.flashSale),
       ListSource.topRated => ('Top rated', shop.topRated),
     };
@@ -126,11 +132,22 @@ class SortChips extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     gradient: m == value ? AppColors.brandGradient : null,
-                    color: m == value ? null : Colors.white.withValues(alpha: 0.06),
+                    color: m == value
+                        ? null
+                        : Colors.white.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: m == value ? Colors.white30 : AppColors.glassBorder),
+                    border: Border.all(
+                      color: m == value
+                          ? Colors.white30
+                          : AppColors.glassBorder,
+                    ),
                     boxShadow: m == value
-                        ? [BoxShadow(color: AppColors.violet.withValues(alpha: 0.5), blurRadius: 12)]
+                        ? [
+                            BoxShadow(
+                              color: AppColors.violet.withValues(alpha: 0.5),
+                              blurRadius: 12,
+                            ),
+                          ]
                         : null,
                   ),
                   child: Text(

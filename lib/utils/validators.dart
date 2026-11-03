@@ -9,8 +9,11 @@ class Validators {
     if (name.trim().length < 2) {
       return 'Name must be at least 2 characters long';
     }
-    if (!RegExp(r'^[a-zA-Z\s.]+$').hasMatch(name.trim())) {
-      return 'Name can only contain letters and spaces';
+    if (!RegExp(
+      r"^[\p{L}\p{M}\s.'’-]+$",
+      unicode: true,
+    ).hasMatch(name.trim())) {
+      return 'Use letters, spaces, apostrophes or hyphens';
     }
     return null;
   }
@@ -19,8 +22,14 @@ class Validators {
     if (email == null || email.trim().isEmpty) {
       return 'Email is required';
     }
-    final emailRegex = RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(email.trim())) {
+    final emailRegex = RegExp(
+      r'^[^\s@]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$',
+    );
+    final local = email.trim().split('@').first;
+    if (!emailRegex.hasMatch(email.trim()) ||
+        local.startsWith('.') ||
+        local.endsWith('.') ||
+        local.contains('..')) {
       return 'Please enter a valid email address';
     }
     return null;
@@ -51,7 +60,9 @@ class Validators {
       return 'Email or phone number is required';
     }
     final looksLikePhone = RegExp(r'^[\d+\s-]+$').hasMatch(value.trim());
-    return looksLikePhone ? bangladeshNumberValidator(value) : emailValidation(value);
+    return looksLikePhone
+        ? bangladeshNumberValidator(value)
+        : emailValidation(value);
   }
 
   static String? passwordValidator(String? password) {
@@ -76,7 +87,10 @@ class Validators {
     return null;
   }
 
-  static String? confirmPasswordValidator(String? password, String? confirmPassword) {
+  static String? confirmPasswordValidator(
+    String? password,
+    String? confirmPassword,
+  ) {
     if (confirmPassword == null || confirmPassword.isEmpty) {
       return 'Please confirm your password';
     }
@@ -93,7 +107,11 @@ class Validators {
     return null;
   }
 
-  static String? minLengthValidator(String? value, int minLength, String fieldName) {
+  static String? minLengthValidator(
+    String? value,
+    int minLength,
+    String fieldName,
+  ) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName is required';
     }

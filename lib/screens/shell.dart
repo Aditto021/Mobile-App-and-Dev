@@ -8,6 +8,8 @@ import '../data/shop.dart';
 import '../theme/app_theme.dart';
 import '../widgets/fly_to_cart.dart';
 import '../widgets/glass.dart';
+import '../services/app_updates.dart';
+import '../services/display_performance.dart';
 import 'account_screen.dart';
 import 'cart_screen.dart';
 import 'categories_screen.dart';
@@ -34,6 +36,27 @@ class Shell extends StatefulWidget {
 }
 
 class _ShellState extends State<Shell> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(onResume: _onResume);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onResume());
+  }
+
+  void _onResume() {
+    if (!mounted) return;
+    DisplayPerformance.configure();
+    checkForAppUpdates(context, automatic: true);
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
   int _tab = 0;
   final _visited = <int>{0};
 
@@ -81,7 +104,7 @@ class _ShellState extends State<Shell> {
                       child: TickerMode(
                         enabled: i == _tab,
                         child: _visited.contains(i)
-                            ? pages[i]
+                            ? RepaintBoundary(child: pages[i])
                             : const SizedBox.shrink(),
                       ),
                     ),

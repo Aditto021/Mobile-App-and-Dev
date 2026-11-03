@@ -18,7 +18,13 @@ class OnboardPage {
   final IconData center;
   final List<IconData> orbit;
   final Color accent;
-  const OnboardPage(this.title, this.body, this.center, this.orbit, this.accent);
+  const OnboardPage(
+    this.title,
+    this.body,
+    this.center,
+    this.orbit,
+    this.accent,
+  );
 }
 
 final _pages = [
@@ -26,21 +32,40 @@ final _pages = [
     'Shop the whole\nuniverse',
     'Phones, fashion, beauty, groceries — over 190 hand-picked products in one place.',
     Iconsax.shopping_bag,
-    [Iconsax.mobile, Iconsax.watch, Iconsax.headphone, Iconsax.glass, Iconsax.bag_2, Iconsax.lamp],
+    [
+      Iconsax.mobile,
+      Iconsax.watch,
+      Iconsax.headphone,
+      Iconsax.glass,
+      Iconsax.bag_2,
+      Iconsax.lamp,
+    ],
     AppColors.violetLight,
   ),
   OnboardPage(
     'Deals at the\nspeed of light',
     'Flash sales every day, up to 25% off, plus vouchers that stack at checkout.',
     Iconsax.flash,
-    [Iconsax.discount_shape, Iconsax.ticket_discount, Iconsax.gift, Iconsax.timer, Iconsax.crown],
+    [
+      Iconsax.discount_shape,
+      Iconsax.ticket_discount,
+      Iconsax.gift,
+      Iconsax.timer,
+      Iconsax.crown,
+    ],
     AppColors.magenta,
   ),
   OnboardPage(
     'Pay your way,\ndelivered fast',
     'bKash, Nagad, card or cash on delivery. Free delivery over ${taka(Brand.freeDeliveryOver)} across Bangladesh.',
     Iconsax.truck_fast,
-    [Iconsax.wallet, Iconsax.card, Iconsax.money, Iconsax.location, Iconsax.shield_tick],
+    [
+      Iconsax.wallet,
+      Iconsax.card,
+      Iconsax.money,
+      Iconsax.location,
+      Iconsax.shield_tick,
+    ],
     AppColors.cyan,
   ),
 ];
@@ -70,7 +95,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _finish() {
     context.read<Shop>().finishOnboarding();
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const AuthScreen()));
+    Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (_) => const AuthScreen()));
   }
 
   @override
@@ -90,7 +116,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     onPressed: _finish,
                     child: Text(
                       'Skip',
-                      style: TextStyle(color: AppColors.textDim, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: AppColors.textDim,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -121,9 +150,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              GradientText(p.title, style: Txt.h1.copyWith(fontSize: 34)),
+                              GradientText(
+                                p.title,
+                                style: Txt.h1.copyWith(fontSize: 34),
+                              ),
                               const SizedBox(height: 14),
-                              Text(p.body, style: Txt.body.copyWith(color: AppColors.textDim, fontSize: 15)),
+                              Text(
+                                p.body,
+                                style: Txt.body.copyWith(
+                                  color: AppColors.textDim,
+                                  fontSize: 15,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -160,7 +198,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       icon: last ? Iconsax.arrow_right_3 : null,
                       onTap: () => last
                           ? _finish()
-                          : _pc.nextPage(duration: const Duration(milliseconds: 600), curve: Curves.easeInOutCubic),
+                          : _pc.nextPage(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.easeInOutCubic,
+                            ),
                     ),
                   ),
                 ],
@@ -183,8 +224,26 @@ class OrbitIllustration extends StatefulWidget {
   State<OrbitIllustration> createState() => _OrbitIllustrationState();
 }
 
-class _OrbitIllustrationState extends State<OrbitIllustration> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 16))..repeat();
+class _OrbitIllustrationState extends State<OrbitIllustration>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 16),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final animate =
+        !MediaQuery.disableAnimationsOf(context) &&
+        !MediaQuery.accessibleNavigationOf(context) &&
+        TickerMode.valuesOf(context).enabled;
+    if (animate && !_c.isAnimating) {
+      _c.repeat();
+    } else if (!animate) {
+      _c.stop();
+    }
+  }
 
   @override
   void dispose() {
@@ -225,7 +284,11 @@ class _OrbitIllustrationState extends State<OrbitIllustration> with SingleTicker
                           opacity: 0.12,
                           child: SizedBox.square(
                             dimension: 58,
-                            child: Icon(p.orbit[i], color: Color.lerp(Colors.white, p.accent, 0.5), size: 26),
+                            child: Icon(
+                              p.orbit[i],
+                              color: Color.lerp(Colors.white, p.accent, 0.5),
+                              size: 26,
+                            ),
                           ),
                         ),
                       ),
@@ -245,7 +308,12 @@ class _OrbitIllustrationState extends State<OrbitIllustration> with SingleTicker
                     height: s * 0.8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: RadialGradient(colors: [p.accent.withValues(alpha: 0.35), Colors.transparent]),
+                      gradient: RadialGradient(
+                        colors: [
+                          p.accent.withValues(alpha: 0.35),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
                   ),
                   // ring
@@ -255,8 +323,12 @@ class _OrbitIllustrationState extends State<OrbitIllustration> with SingleTicker
                       width: s * 0.92,
                       height: s * 0.3,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.elliptical(s * 0.46, s * 0.15)),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                        borderRadius: BorderRadius.all(
+                          Radius.elliptical(s * 0.46, s * 0.15),
+                        ),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12),
+                        ),
                       ),
                     ),
                   ),
@@ -279,16 +351,26 @@ class _OrbitIllustrationState extends State<OrbitIllustration> with SingleTicker
                           ],
                         ),
                         boxShadow: [
-                          BoxShadow(color: p.accent.withValues(alpha: 0.6), blurRadius: 60, spreadRadius: 4),
+                          BoxShadow(
+                            color: p.accent.withValues(alpha: 0.6),
+                            blurRadius: 60,
+                            spreadRadius: 4,
+                          ),
                           BoxShadow(
                             color: Colors.white.withValues(alpha: 0.25),
                             blurRadius: 2,
                             offset: const Offset(-2, -2),
                           ),
                         ],
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.35),
+                        ),
                       ),
-                      child: Icon(p.center, size: s * 0.15, color: Colors.white),
+                      child: Icon(
+                        p.center,
+                        size: s * 0.15,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   ...front,

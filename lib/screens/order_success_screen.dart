@@ -20,16 +20,26 @@ class OrderSuccessScreen extends StatefulWidget {
   State<OrderSuccessScreen> createState() => _OrderSuccessScreenState();
 }
 
-class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTickerProviderStateMixin {
+class _OrderSuccessScreenState extends State<OrderSuccessScreen>
+    with SingleTickerProviderStateMixin {
   final _confetti = ConfettiController(duration: const Duration(seconds: 2));
   late final AnimationController _check = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1300),
   );
 
+  bool _started = false;
+
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (MediaQuery.disableAnimationsOf(context) ||
+        MediaQuery.accessibleNavigationOf(context)) {
+      _check.value = 1;
+      return;
+    }
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       _check.forward();
@@ -61,13 +71,19 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
                   const Spacer(),
                   AnimatedBuilder(
                     animation: _check,
-                    builder: (_, _) => CustomPaint(size: const Size.square(170), painter: _CheckPainter(_check.value)),
+                    builder: (_, _) => CustomPaint(
+                      size: const Size.square(170),
+                      painter: _CheckPainter(_check.value),
+                    ),
                   ),
                   const SizedBox(height: 26),
                   GradientText(
-                    'Order placed!',
-                    style: Txt.h1.copyWith(fontSize: 32),
-                  ).animate().fadeIn(delay: 900.ms).slideY(begin: 0.4, curve: Curves.easeOutCubic),
+                        'Order placed!',
+                        style: Txt.h1.copyWith(fontSize: 32),
+                      )
+                      .animate()
+                      .fadeIn(delay: 900.ms)
+                      .slideY(begin: 0.4, curve: Curves.easeOutCubic),
                   const SizedBox(height: 8),
                   Text(
                     'Sit back — your order is on its way across the galaxy.',
@@ -76,28 +92,35 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
                   ).animate().fadeIn(delay: 1050.ms),
                   const SizedBox(height: 28),
                   Glass(
-                    radius: 26,
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      children: [
-                        _row(Iconsax.receipt_item, 'Order ID', '#${o.id}'),
-                        _row(Iconsax.wallet_2, 'Payment', o.payment),
-                        _row(Iconsax.money, 'Total', taka(o.total)),
-                        _row(Iconsax.truck_fast, 'Arrives', _eta()),
-                      ],
-                    ),
-                  ).animate().fadeIn(delay: 1200.ms).slideY(begin: 0.2, curve: Curves.easeOutCubic),
+                        radius: 26,
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          children: [
+                            _row(Iconsax.receipt_item, 'Order ID', '#${o.id}'),
+                            _row(Iconsax.wallet_2, 'Payment', o.payment),
+                            _row(Iconsax.money, 'Total', taka(o.total)),
+                            _row(Iconsax.truck_fast, 'Arrives', _eta()),
+                          ],
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 1200.ms)
+                      .slideY(begin: 0.2, curve: Curves.easeOutCubic),
                   const Spacer(),
                   GlowButton(
                     label: 'Track my order',
                     icon: Iconsax.location,
-                    onTap: () =>
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const OrdersScreen())),
+                    onTap: () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const OrdersScreen()),
+                    ),
                   ).animate().fadeIn(delay: 1400.ms),
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Continue shopping', style: TextStyle(color: AppColors.violetLight)),
+                    child: const Text(
+                      'Continue shopping',
+                      style: TextStyle(color: AppColors.violetLight),
+                    ),
                   ),
                 ],
               ),
@@ -114,7 +137,13 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
               maxBlastForce: 28,
               minBlastForce: 8,
               gravity: 0.18,
-              colors: const [AppColors.violetLight, AppColors.magenta, AppColors.gold, AppColors.cyan, Colors.white],
+              colors: const [
+                AppColors.violetLight,
+                AppColors.magenta,
+                AppColors.gold,
+                AppColors.cyan,
+                Colors.white,
+              ],
               createParticlePath: _star,
             ),
           ),
@@ -126,7 +155,20 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
   String _eta() {
     final d = DateTime.now().add(const Duration(days: 2));
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${days[d.weekday - 1]}, ${d.day} ${months[d.month - 1]}';
   }
 
@@ -166,7 +208,9 @@ class _CheckPainter extends CustomPainter {
     final c = size.center(Offset.zero);
     final r = size.width * 0.38;
     final ringT = Curves.easeOutCubic.transform((t / 0.5).clamp(0.0, 1.0));
-    final checkT = Curves.easeOutCubic.transform(((t - 0.45) / 0.35).clamp(0.0, 1.0));
+    final checkT = Curves.easeOutCubic.transform(
+      ((t - 0.45) / 0.35).clamp(0.0, 1.0),
+    );
     final pulseT = ((t - 0.7) / 0.3).clamp(0.0, 1.0);
 
     // pulse
@@ -185,7 +229,9 @@ class _CheckPainter extends CustomPainter {
       c,
       r * ringT,
       Paint()
-        ..shader = AppColors.brandGradient.createShader(Rect.fromCircle(center: c, radius: r))
+        ..shader = AppColors.brandGradient.createShader(
+          Rect.fromCircle(center: c, radius: r),
+        )
         ..color = Colors.white,
     );
     canvas.drawCircle(

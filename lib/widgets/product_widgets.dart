@@ -114,7 +114,7 @@ class PriceTag extends StatelessWidget {
                 ? (p.discount > 0
                       ? const Color(0xFFB72D70)
                       : const Color(0xFF251D35))
-                : (p.discount > 0 ? AppColors.cyan : AppColors.text),
+                : (p.discount > 0 ? AppColors.lavender : AppColors.text),
           ),
         ),
         if (p.discount > 0)
@@ -122,7 +122,9 @@ class PriceTag extends StatelessWidget {
             taka(p.originalPrice),
             style: TextStyle(
               fontSize: size * 0.68,
-              color: AppColors.textFaint,
+              color: lightSurface
+                  ? const Color(0xFF777080)
+                  : AppColors.textFaint,
               decoration: TextDecoration.lineThrough,
               decorationColor: AppColors.textFaint,
             ),
@@ -187,7 +189,7 @@ class DiscountChip extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFFF5277), Color(0xFFE13C88), Color(0xFFAA42D8)],
+          colors: [Color(0xFF604276), Color(0xFF7C527F)],
         ),
         borderRadius: BorderRadius.circular(10),
       ),
@@ -283,14 +285,9 @@ class _ProductCardState extends State<ProductCard> {
           border: Border.all(color: const Color(0xBFE9DDF4)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.magenta.withValues(alpha: 0.16),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.22),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.16),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -369,7 +366,7 @@ class AddButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Add ' + product.title + ' to cart',
+      label: 'Add ${product.title} to cart',
       child: Tooltip(
         message: 'Add to cart',
         child: Pressable(
@@ -406,8 +403,9 @@ extension Entrance on Widget {
   Widget entrance(int index, {int baseMs = 0}) => Builder(
     builder: (context) {
       if (MediaQuery.disableAnimationsOf(context) ||
-          MediaQuery.accessibleNavigationOf(context))
+          MediaQuery.accessibleNavigationOf(context)) {
         return this;
+      }
       return animate(delay: (20 * (index % 4)).ms)
           .fadeIn(duration: 220.ms, curve: Curves.easeOut)
           .slideY(

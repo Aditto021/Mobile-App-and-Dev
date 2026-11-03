@@ -14,6 +14,13 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+    // Native plugins otherwise write CMake state into the shared pub cache.
+    plugins.withId("com.android.library") {
+        extensions.configure<com.android.build.gradle.LibraryExtension>("android") {
+            externalNativeBuild.cmake.buildStagingDirectory =
+                newSubprojectBuildDir.dir("cmake").asFile
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")

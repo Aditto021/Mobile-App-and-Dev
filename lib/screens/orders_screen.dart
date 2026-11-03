@@ -41,7 +41,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return Scaffold(
       body: Column(
         children: [
-          TopBar(title: 'My Orders', subtitle: orders.isEmpty ? null : plural(orders.length, 'order')),
+          TopBar(
+            title: 'My Orders',
+            subtitle: orders.isEmpty ? null : plural(orders.length, 'order'),
+          ),
           Expanded(
             child: orders.isEmpty
                 ? EmptyState(
@@ -91,9 +94,13 @@ class _OrderCard extends StatelessWidget {
                 Text('#${o.id}', style: Txt.h3),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: (s == 3 ? AppColors.mint : AppColors.violetLight).withValues(alpha: 0.18),
+                    color: (s == 3 ? AppColors.mint : AppColors.violetLight)
+                        .withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -145,19 +152,44 @@ class _OrderCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: i <= s ? AppColors.brandGradient : null,
-                              color: i <= s ? null : Colors.white.withValues(alpha: 0.06),
+                              color: i <= s
+                                  ? null
+                                  : Colors.white.withValues(alpha: 0.06),
                               boxShadow: i == s
-                                  ? [BoxShadow(color: AppColors.magenta.withValues(alpha: 0.7), blurRadius: 16)]
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.magenta.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        blurRadius: 16,
+                                      ),
+                                    ]
                                   : null,
                             ),
-                            child: Icon(_steps[i].$1, size: 17, color: i <= s ? Colors.white : AppColors.textFaint),
+                            child: Icon(
+                              _steps[i].$1,
+                              size: 17,
+                              color: i <= s
+                                  ? Colors.white
+                                  : AppColors.textFaint,
+                            ),
                           )
-                          .animate(target: i == s && s < 3 ? 1 : 0, onPlay: (c) => c.repeat(reverse: true))
-                          .scaleXY(end: 1.12, duration: 900.ms, curve: Curves.easeInOut),
+                          .animate(
+                            target: i == s && s < 3 ? 1 : 0,
+                            onPlay: (c) => c.repeat(reverse: true),
+                          )
+                          .scaleXY(
+                            end: 1.12,
+                            duration: 900.ms,
+                            curve: Curves.easeInOut,
+                          ),
                       const SizedBox(height: 5),
                       Text(
                         _steps[i].$2,
-                        style: TextStyle(fontSize: 10, color: i <= s ? AppColors.text : AppColors.textFaint),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: i <= s ? AppColors.text : AppColors.textFaint,
+                        ),
                       ),
                     ],
                   ),
@@ -167,13 +199,18 @@ class _OrderCard extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 18),
                         child: Stack(
                           children: [
-                            Container(height: 3, color: Colors.white.withValues(alpha: 0.08)),
+                            Container(
+                              height: 3,
+                              color: Colors.white.withValues(alpha: 0.08),
+                            ),
                             AnimatedFractionallySizedBox(
                               duration: const Duration(milliseconds: 700),
                               widthFactor: i < s ? 1 : 0,
                               child: Container(
                                 height: 3,
-                                decoration: const BoxDecoration(gradient: AppColors.brandGradient),
+                                decoration: const BoxDecoration(
+                                  gradient: AppColors.brandGradient,
+                                ),
                               ),
                             ),
                           ],
@@ -188,7 +225,10 @@ class _OrderCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 10),
                 child: Text(
                   'Live demo: status advances every minute',
-                  style: Txt.small.copyWith(color: AppColors.textFaint, fontSize: 10.5),
+                  style: Txt.small.copyWith(
+                    color: AppColors.textFaint,
+                    fontSize: 10.5,
+                  ),
                 ),
               ),
           ],

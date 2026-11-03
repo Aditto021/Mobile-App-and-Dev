@@ -39,38 +39,73 @@ class Shop extends ChangeNotifier {
   String? couponCode;
   bool onboarded = false;
   bool ready = false;
+  String? loadError;
 
   SharedPreferences? _prefs;
 
+  dynamic _decodeSaved(String? raw) {
+    if (raw == null) return null;
+    try {
+      return jsonDecode(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> load() async {
-    final raw = await rootBundle.loadString('assets/data/products.json');
-    products = (jsonDecode(raw) as List)
-        .map((e) => Product.fromJson(e as Map<String, dynamic>))
-        .toList();
+    loadError = null;
+    ready = false;
+    notifyListeners();
+    try {
+      final raw = await rootBundle.loadString('assets/data/products.json');
+      products = (jsonDecode(raw) as List)
+          .map((e) => Product.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      loadError = 'Your catalogue could not be loaded. Please try again.';
+      notifyListeners();
+      return;
+    }
     try {
       _prefs = await SharedPreferences.getInstance();
       final p = _prefs!;
       onboarded = p.getBool('onboarded') ?? false;
-      liveNebula.value = p.getBool('liveBackground') ?? true;
+      liveNebula.value = p.getBool('liveBackground') ?? false;
       userName = p.getString('userName');
+      if (userName?.trim().isEmpty ?? false) userName = null;
       userEmail = p.getString('userEmail');
       address = p.getString('address') ?? address;
-      wishlist.addAll((p.getStringList('wishlist') ?? []).map(int.parse));
-      recentSearches.addAll(p.getStringList('recent') ?? []);
-      final cart = p.getString('cart');
-      if (cart != null) {
-        (jsonDecode(cart) as Map<String, dynamic>).forEach((k, v) {
-          final prod = byId(int.parse(k));
-          if (prod != null) _cart[prod.id] = CartItem(prod, v as int);
+      final savedCoupon = p.getString('couponCode');
+      couponCode = savedCoupon == Brand.couponCode ? savedCoupon : null;
+      wishlist.clear();
+      for (final id in p.getStringList('wishlist') ?? <String>[]) {
+        final parsed = int.tryParse(id);
+        if (parsed != null && byId(parsed) != null) wishlist.add(parsed);
+      }
+      recentSearches
+        ..clear()
+        ..addAll((p.getStringList('recent') ?? []).take(8));
+      _cart.clear();
+      final cart = _decodeSaved(p.getString('cart'));
+      if (cart is Map<String, dynamic>) {
+        cart.forEach((k, v) {
+          final id = int.tryParse(k);
+          final prod = id == null ? null : byId(id);
+          if (prod != null && v is int && v > 0) {
+            _cart[prod.id] = CartItem(prod, v.clamp(1, 99));
+          }
         });
       }
-      final o = p.getString('orders');
-      if (o != null) {
-        orders.addAll(
-          (jsonDecode(o) as List).map(
-            (e) => Order.fromJson(e as Map<String, dynamic>),
-          ),
-        );
+      final o = _decodeSaved(p.getString('orders'));
+      if (o is List) {
+        orders.clear();
+        for (final entry in o) {
+          try {
+            orders.add(Order.fromJson(entry as Map<String, dynamic>));
+          } catch (_) {
+            /* A damaged order should not hide the remaining history. */
+          }
+        }
       }
     } catch (_) {
       // Storage unavailable (e.g. private browsing) — run in-memory.
@@ -87,6 +122,11 @@ class Shop extends ChangeNotifier {
     if (userName != null) p.setString('userName', userName!);
     if (userEmail != null) p.setString('userEmail', userEmail!);
     p.setString('address', address);
+    if (couponCode == null) {
+      p.remove('couponCode');
+    } else {
+      p.setString('couponCode', couponCode!);
+    }
     p.setStringList('wishlist', wishlist.map((e) => '$e').toList());
     p.setStringList('recent', recentSearches);
     p.setString(
@@ -161,7 +201,7 @@ class Shop extends ChangeNotifier {
     final s = q.trim();
     if (s.isEmpty) return;
     recentSearches
-      ..remove(s)
+      ..removeWhere((item) => item.toLowerCase() == s.toLowerCase())
       ..insert(0, s);
     if (recentSearches.length > 8) recentSearches.removeLast();
     _changed();
@@ -194,9 +234,10 @@ class Shop extends ChangeNotifier {
   int qtyOf(int id) => _cart[id]?.qty ?? 0;
 
   void addToCart(Product p, [int qty = 1]) {
+    if (qty <= 0) return;
     final c = _cart[p.id];
     if (c == null) {
-      _cart[p.id] = CartItem(p, qty);
+      _cart[p.id] = CartItem(p, qty.clamp(1, 99));
     } else {
       c.qty = (c.qty + qty).clamp(1, 99);
     }
@@ -220,7 +261,7 @@ class Shop extends ChangeNotifier {
   bool applyCoupon(String code) {
     if (code.trim().toUpperCase() == Brand.couponCode) {
       couponCode = Brand.couponCode;
-      notifyListeners();
+      _changed();
       return true;
     }
     return false;
@@ -248,8 +289,8 @@ class Shop extends ChangeNotifier {
   }
 
   void signIn(String name, String email) {
-    userName = name;
-    userEmail = email;
+    userName = name.trim().isEmpty ? 'Shopper' : name.trim();
+    userEmail = email.trim();
     _changed();
   }
 
@@ -267,6 +308,7 @@ class Shop extends ChangeNotifier {
   }
 
   Order placeOrder(String payment) {
+    if (_cart.isEmpty) throw StateError('Your cart is empty');
     final now = DateTime.now();
     final order = Order(
       id: '${Brand.orderPrefix}${now.millisecondsSinceEpoch.toString().substring(5)}',

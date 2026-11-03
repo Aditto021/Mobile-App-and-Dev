@@ -10,17 +10,17 @@
 
 class Brand {
   /// Full display name (Android launcher label, web title, about page).
-  static const appName = 'FeriWala';
+  static const appName = 'feriWala';
 
   /// Word mark is drawn as [wordmarkMain] + [wordmarkSuffix].
-  static const wordmarkMain = 'FeriWala';
+  static const wordmarkMain = 'feriWala';
   static const wordmarkSuffix = '';
 
   /// Bengali line shown under the logo on the splash screen.
   static const banglaTagline = 'আপনার পছন্দ, আপনার দরজায়';
 
   static const tagline = 'Discover it. Love it. Bring it home.';
-  static const description = 'FeriWala — premium e-commerce';
+  static const description = 'feriWala — premium e-commerce';
 
   /// Welcome voucher advertised on the home screen and accepted in the cart.
   static const couponCode = 'FERIWALA10';

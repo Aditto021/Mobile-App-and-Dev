@@ -1,12 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:provider/provider.dart';
 
 import 'config/brand.dart';
 import 'data/shop.dart';
 import 'screens/splash_screen.dart';
+import 'services/display_performance.dart';
 import 'theme/app_theme.dart';
 import 'widgets/fly_to_cart.dart';
 import 'widgets/space_background.dart';
@@ -23,12 +22,15 @@ void main() {
     ),
   );
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  // Many Android phones run apps at 60 Hz unless they ask for more —
-  // request the panel's highest refresh rate (90/120/144 Hz).
-  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-    FlutterDisplayMode.setHighRefreshRate().catchError((Object e) => debugPrint('Refresh rate: $e'));
-  }
-  runApp(ChangeNotifierProvider(create: (_) => Shop()..load(), child: const ShopApp()));
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => DisplayPerformance.configure(),
+  );
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => Shop()..load(),
+      child: const ShopApp(),
+    ),
+  );
 }
 
 class ShopApp extends StatelessWidget {

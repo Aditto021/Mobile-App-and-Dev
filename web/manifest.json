@@ -1,11 +1,11 @@
 {
-    "name": "FeriWala",
-    "short_name": "FeriWala",
+    "name": "feriWala",
+    "short_name": "feriWala",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0B0518",
     "theme_color": "#7C3AED",
-    "description": "FeriWala — premium e-commerce",
+    "description": "feriWala — premium e-commerce",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

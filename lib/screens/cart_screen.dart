@@ -26,7 +26,11 @@ class CartScreen extends StatelessWidget {
     final items = shop.cart;
     final body = Column(
       children: [
-        TopBar(title: 'My Cart', subtitle: items.isEmpty ? null : plural(shop.cartCount, 'item'), back: standalone),
+        TopBar(
+          title: 'My Cart',
+          subtitle: items.isEmpty ? null : plural(shop.cartCount, 'item'),
+          back: standalone,
+        ),
         Expanded(
           child: items.isEmpty
               ? EmptyState(
@@ -41,10 +45,17 @@ class CartScreen extends StatelessWidget {
                 )
               : ListView(
                   physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(16, 4, 16, standalone ? 30 : 120),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    4,
+                    16,
+                    standalone ? 30 : 120,
+                  ),
                   children: [
-                    if (shop.delivery > 0) _FreeDeliveryBar(subtotal: shop.subtotal),
-                    for (final (i, c) in items.indexed) _CartTile(c, key: ValueKey(c.product.id)).entrance(i),
+                    if (shop.delivery > 0)
+                      _FreeDeliveryBar(subtotal: shop.subtotal),
+                    for (final (i, c) in items.indexed)
+                      _CartTile(c, key: ValueKey(c.product.id)).entrance(i),
                     const SizedBox(height: 8),
                     const _CouponField(),
                     const SizedBox(height: 16),
@@ -147,7 +158,12 @@ class _CartTile extends StatelessWidget {
           padding: const EdgeInsets.only(right: 26),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
-            gradient: LinearGradient(colors: [Colors.transparent, AppColors.rose.withValues(alpha: 0.6)]),
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                AppColors.rose.withValues(alpha: 0.6),
+              ],
+            ),
           ),
           child: const Icon(Iconsax.trash, color: Colors.white),
         ),
@@ -164,7 +180,10 @@ class _CartTile extends StatelessWidget {
                   height: 86,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Hero(tag: 'cart-${p.id}', child: ProductImage(p.thumbnail, padding: 6)),
+                    child: Hero(
+                      tag: 'cart-${p.id}',
+                      child: ProductImage(p.thumbnail, padding: 6),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -179,12 +198,19 @@ class _CartTile extends StatelessWidget {
                         style: const TextStyle(fontSize: 13.5),
                       ),
                       const SizedBox(height: 4),
-                      Text(p.brand, style: Txt.small.copyWith(color: AppColors.textFaint)),
+                      Text(
+                        p.brand,
+                        style: Txt.small.copyWith(color: AppColors.textFaint),
+                      ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           Expanded(child: PriceTag(p, size: 15)),
-                          QtyStepper(qty: c.qty, onChanged: (v) => shop.setQty(p, v), size: 28),
+                          QtyStepper(
+                            qty: c.qty,
+                            onChanged: (v) => shop.setQty(p, v),
+                            size: 28,
+                          ),
                         ],
                       ),
                     ],
@@ -229,43 +255,52 @@ class _CouponFieldState extends State<_CouponField> {
           children: [
             const Icon(Iconsax.ticket_discount, color: AppColors.mint),
             const SizedBox(width: 10),
-            Expanded(child: Text('${shop.couponCode} applied — you save ${taka(shop.couponDiscount)}')),
-          ],
-        ),
-      ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack);
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
             Expanded(
-              child: TextField(
-                controller: _c,
-                textCapitalization: TextCapitalization.characters,
-                decoration: InputDecoration(
-                  hintText: 'Voucher code',
-                  prefixIcon: const Icon(Iconsax.ticket_discount, size: 20),
-                  errorText: _error,
-                ),
+              child: Text(
+                '${shop.couponCode} applied — you save ${taka(shop.couponDiscount)}',
               ),
             ),
-            const SizedBox(width: 10),
-            GlowButton(
-              label: 'Apply',
-              expanded: false,
-              shine: false,
-              height: 54,
-              onTap: () {
-                final ok = shop.applyCoupon(_c.text);
-                HapticFeedback.mediumImpact();
-                setState(() => _error = ok ? null : 'Invalid voucher code');
-              },
-            ),
           ],
         ),
-      ],
-    ).animate(target: _error == null ? 0 : 1).shakeX(hz: 5, amount: 6, duration: 400.ms);
+      ).animate().fadeIn().scale(
+        begin: const Offset(0.95, 0.95),
+        curve: Curves.easeOutBack,
+      );
+    }
+    return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _c,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: InputDecoration(
+                      hintText: 'Voucher code',
+                      prefixIcon: const Icon(Iconsax.ticket_discount, size: 20),
+                      errorText: _error,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                GlowButton(
+                  label: 'Apply',
+                  expanded: false,
+                  shine: false,
+                  height: 54,
+                  onTap: () {
+                    final ok = shop.applyCoupon(_c.text);
+                    HapticFeedback.mediumImpact();
+                    setState(() => _error = ok ? null : 'Invalid voucher code');
+                  },
+                ),
+              ],
+            ),
+          ],
+        )
+        .animate(target: _error == null ? 0 : 1)
+        .shakeX(hz: 5, amount: 6, duration: 400.ms);
   }
 }
 
@@ -283,7 +318,9 @@ class _Summary extends StatelessWidget {
           const Spacer(),
           AnimatedCount(
             value: v,
-            format: (x) => x == 0 && l == 'Delivery' ? 'FREE' : '${neg ? '−' : ''}${taka(x)}',
+            format: (x) => x == 0 && l == 'Delivery'
+                ? 'FREE'
+                : '${neg ? '−' : ''}${taka(x)}',
             style: TextStyle(fontWeight: FontWeight.w600, color: color),
           ),
         ],
@@ -295,9 +332,20 @@ class _Summary extends StatelessWidget {
       child: Column(
         children: [
           row('Subtotal', shop.subtotal),
-          row('Delivery', shop.delivery, color: shop.delivery == 0 ? AppColors.mint : null),
-          if (shop.couponDiscount > 0) row('Voucher', shop.couponDiscount, color: AppColors.mint, neg: true),
-          if (shop.savings > 0) row('You saved', shop.savings, color: AppColors.mint),
+          row(
+            'Delivery',
+            shop.delivery,
+            color: shop.delivery == 0 ? AppColors.mint : null,
+          ),
+          if (shop.couponDiscount > 0)
+            row(
+              'Voucher',
+              shop.couponDiscount,
+              color: AppColors.mint,
+              neg: true,
+            ),
+          if (shop.savings > 0)
+            row('You saved', shop.savings, color: AppColors.mint),
           Divider(color: AppColors.glassBorder, height: 22),
           Row(
             children: [
@@ -306,8 +354,13 @@ class _Summary extends StatelessWidget {
               AnimatedCount(
                 value: shop.total,
                 format: taka,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-                gradient: const LinearGradient(colors: [Color(0xFFF5D0FE), Color(0xFFC4B5FD)]),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFF5D0FE), Color(0xFFC4B5FD)],
+                ),
               ),
             ],
           ),

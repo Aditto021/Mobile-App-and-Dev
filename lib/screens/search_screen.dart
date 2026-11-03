@@ -29,7 +29,16 @@ class _SearchScreenState extends State<SearchScreen> {
   String _q = '';
   SortMode _sort = SortMode.popular;
 
-  static const _trending = ['iPhone', 'Perfume', 'Watch', 'Laptop', 'Sunglasses', 'Shoes', 'Lipstick', 'Sofa'];
+  static const _trending = [
+    'iPhone',
+    'Perfume',
+    'Watch',
+    'Laptop',
+    'Sunglasses',
+    'Shoes',
+    'Lipstick',
+    'Sofa',
+  ];
 
   @override
   void initState() {
@@ -49,10 +58,14 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onChanged(String v) {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 220), () => setState(() => _q = v));
+    _debounce = Timer(
+      const Duration(milliseconds: 220),
+      () => setState(() => _q = v),
+    );
   }
 
   void _submit(String v) {
+    _debounce?.cancel();
     context.read<Shop>().addRecentSearch(v);
     setState(() => _q = v);
   }
@@ -75,7 +88,10 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: EdgeInsets.fromLTRB(16, top + 8, 16, 8),
             child: Row(
               children: [
-                GlassIconButton(icon: Iconsax.arrow_left_2, onTap: () => Navigator.of(context).pop()),
+                GlassIconButton(
+                  icon: Iconsax.arrow_left_2,
+                  onTap: () => Navigator.of(context).pop(),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Hero(
@@ -98,12 +114,20 @@ class _SearchScreenState extends State<SearchScreen> {
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
                             focusedBorder: InputBorder.none,
-                            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.violetLight),
+                            prefixIcon: const Icon(
+                              Icons.search_rounded,
+                              size: 20,
+                              color: AppColors.violetLight,
+                            ),
                             suffixIcon: _c.text.isEmpty
                                 ? null
                                 : IconButton(
-                                    icon: const Icon(Iconsax.close_circle, size: 20),
+                                    icon: const Icon(
+                                      Iconsax.close_circle,
+                                      size: 20,
+                                    ),
                                     onPressed: () {
+                                      _debounce?.cancel();
                                       _c.clear();
                                       setState(() => _q = '');
                                     },
@@ -141,13 +165,20 @@ class _SearchScreenState extends State<SearchScreen> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-                          child: Text('${results.length} results', style: Txt.small.copyWith(color: AppColors.textDim)),
+                          child: Text(
+                            '${results.length} results',
+                            style: Txt.small.copyWith(color: AppColors.textDim),
+                          ),
                         ),
-                        SortChips(value: _sort, onChanged: (m) => setState(() => _sort = m)),
+                        SortChips(
+                          value: _sort,
+                          onChanged: (m) => setState(() => _sort = m),
+                        ),
                         Expanded(
                           child: MasonryGridView.count(
                             physics: const BouncingScrollPhysics(),
-                            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
                             padding: const EdgeInsets.fromLTRB(14, 6, 14, 40),
                             crossAxisCount: 2,
                             mainAxisSpacing: 14,
@@ -188,21 +219,28 @@ class _Suggestions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget chip(String s, IconData icon, int i) => Pressable(
-      onTap: () => onPick(s),
-      child: GlassTile(
-        radius: 16,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 15, color: AppColors.violetLight),
-            const SizedBox(width: 7),
-            Text(s, style: const TextStyle(fontSize: 13)),
-          ],
-        ),
-      ),
-    ).animate(delay: (40 * i).ms).fadeIn().scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack);
+    Widget chip(String s, IconData icon, int i) =>
+        Pressable(
+              onTap: () => onPick(s),
+              child: GlassTile(
+                radius: 16,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 9,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 15, color: AppColors.violetLight),
+                    const SizedBox(width: 7),
+                    Text(s, style: const TextStyle(fontSize: 13)),
+                  ],
+                ),
+              ),
+            )
+            .animate(delay: (40 * i).ms)
+            .fadeIn()
+            .scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack);
 
     return ListView(
       physics: const BouncingScrollPhysics(),
@@ -215,19 +253,31 @@ class _Suggestions extends StatelessWidget {
               const Spacer(),
               TextButton(
                 onPressed: onClear,
-                child: const Text('Clear', style: TextStyle(color: AppColors.violetLight)),
+                child: const Text(
+                  'Clear',
+                  style: TextStyle(color: AppColors.violetLight),
+                ),
               ),
             ],
           ),
-          Wrap(spacing: 8, runSpacing: 8, children: [for (final (i, s) in recent.indexed) chip(s, Iconsax.clock, i)]),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final (i, s) in recent.indexed) chip(s, Iconsax.clock, i),
+            ],
+          ),
           const SizedBox(height: 26),
         ],
-        Text('Trending now 🔥', style: Txt.h3),
+        Text('Trending now', style: Txt.h3),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: [for (final (i, s) in trending.indexed) chip(s, Iconsax.status_up, i)],
+          children: [
+            for (final (i, s) in trending.indexed)
+              chip(s, Iconsax.status_up, i),
+          ],
         ),
         const SizedBox(height: 26),
         Text('Browse categories', style: Txt.h3),
@@ -238,7 +288,8 @@ class _Suggestions extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.82,
+          childAspectRatio:
+              0.68 / MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.6),
           children: [
             for (final (i, c) in categories.take(12).indexed)
               Pressable(
@@ -255,7 +306,12 @@ class _Suggestions extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(c.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
+                    Text(
+                      c.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ],
                 ),
               ).entrance(i),

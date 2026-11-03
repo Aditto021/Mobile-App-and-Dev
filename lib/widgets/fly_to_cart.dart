@@ -166,8 +166,9 @@ class _CartTargetState extends State<CartTarget>
 
   void pulse() {
     if (!MediaQuery.disableAnimationsOf(context) &&
-        !MediaQuery.accessibleNavigationOf(context))
+        !MediaQuery.accessibleNavigationOf(context)) {
       _c.forward(from: 0);
+    }
   }
 
   @override

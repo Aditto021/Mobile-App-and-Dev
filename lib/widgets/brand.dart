@@ -36,7 +36,7 @@ class _CycleVendorLogoState extends State<CycleVendorLogo>
     final motionAllowed =
         !MediaQuery.disableAnimationsOf(context) &&
         !MediaQuery.accessibleNavigationOf(context) &&
-        TickerMode.of(context);
+        TickerMode.valuesOf(context).enabled;
     if (motionAllowed && !_motion.isAnimating) {
       _motion.repeat(reverse: true);
     } else if (!motionAllowed && _motion.isAnimating) {
@@ -65,14 +65,8 @@ class _CycleVendorLogoState extends State<CycleVendorLogo>
             // avoids the repeated bobble caused by a full sine wave.
             final bob = math.sin(t * math.pi);
             return Transform.translate(
-              offset: Offset(
-                (t - 0.5) * 2 * widget.travel,
-                -bob * 1.4,
-              ),
-              child: Transform.rotate(
-                angle: -bob * 0.003,
-                child: child,
-              ),
+              offset: Offset((t - 0.5) * 2 * widget.travel, -bob * 1.4),
+              child: Transform.rotate(angle: -bob * 0.003, child: child),
             );
           },
           child: SizedBox(
@@ -96,6 +90,7 @@ class _CycleVendorLogoState extends State<CycleVendorLogo>
                 ),
                 Image.asset(
                   'assets/brand/feriwala_cycle_vendor.png',
+                  cacheWidth: 1024,
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.medium,
                   excludeFromSemantics: true,

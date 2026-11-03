@@ -20,10 +20,34 @@ class _Pay {
 }
 
 const _methods = [
-  _Pay('bkash', 'bKash', 'Pay with your bKash wallet', Iconsax.wallet_2, Color(0xFFE2136E)),
-  _Pay('nagad', 'Nagad', 'Pay with your Nagad wallet', Iconsax.wallet_money, Color(0xFFF7941D)),
-  _Pay('card', 'Credit / Debit card', 'Visa, Mastercard, Amex', Iconsax.card, AppColors.cyan),
-  _Pay('cod', 'Cash on delivery', 'Pay when it arrives', Iconsax.money, AppColors.mint),
+  _Pay(
+    'bkash',
+    'bKash',
+    'Pay with your bKash wallet',
+    Iconsax.wallet_2,
+    Color(0xFFE2136E),
+  ),
+  _Pay(
+    'nagad',
+    'Nagad',
+    'Pay with your Nagad wallet',
+    Iconsax.wallet_money,
+    Color(0xFFF7941D),
+  ),
+  _Pay(
+    'card',
+    'Credit / Debit card',
+    'Visa, Mastercard, Amex',
+    Iconsax.card,
+    AppColors.cyan,
+  ),
+  _Pay(
+    'cod',
+    'Cash on delivery',
+    'Pay when it arrives',
+    Iconsax.money,
+    AppColors.mint,
+  ),
 ];
 
 class CheckoutScreen extends StatefulWidget {
@@ -34,7 +58,7 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  String _method = 'bkash';
+  String _method = 'cod';
   final _cardForm = GlobalKey<FormState>();
   final _walletForm = GlobalKey<FormState>();
   final _cardNo = TextEditingController();
@@ -61,11 +85,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Future<void> _pay() async {
+    if (!mounted) return;
     final shop = context.read<Shop>();
+    if (shop.cart.isEmpty) {
+      toast(context, 'Your cart is empty');
+      return;
+    }
     final name = _methods.firstWhere((m) => m.id == _method).name;
     final order = shop.placeOrder(name);
-    await Navigator.of(context)
-        .pushAndRemoveUntil(MaterialPageRoute(builder: (_) => OrderSuccessScreen(order: order)), (r) => r.isFirst);
+    await Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => OrderSuccessScreen(order: order)),
+      (r) => r.isFirst,
+    );
   }
 
   @override
@@ -74,7 +105,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Scaffold(
       body: Column(
         children: [
-          const TopBar(title: 'Checkout', subtitle: 'Secure · 256-bit encrypted'),
+          const TopBar(title: 'Checkout', subtitle: 'Review your order'),
           Expanded(
             child: ListView(
               physics: const BouncingScrollPhysics(),
@@ -84,6 +115,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 _AddressCard(address: shop.address).entrance(0),
                 const SizedBox(height: 22),
                 const _StepHeader(step: 'Payment method', n: 2),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    'Demo checkout · no payment is collected. Use sample payment details only.',
+                    style: Txt.small.copyWith(color: AppColors.textFaint),
+                  ),
+                ),
                 for (final (i, m) in _methods.indexed)
                   _PayTile(
                     m: m,
@@ -94,7 +132,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.easeOutCubic,
                   child: switch (_method) {
-                    'card' => _CardForm(formKey: _cardForm, number: _cardNo, expiry: _expiry, cvv: _cvv),
+                    'card' => _CardForm(
+                      formKey: _cardForm,
+                      number: _cardNo,
+                      expiry: _expiry,
+                      cvv: _cvv,
+                    ),
                     'bkash' || 'nagad' => Form(
                       key: _walletForm,
                       child: Padding(
@@ -103,7 +146,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           controller: _wallet,
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
-                            hintText: '${_method == 'bkash' ? 'bKash' : 'Nagad'} account number',
+                            hintText:
+                                '${_method == 'bkash' ? 'bKash' : 'Nagad'} account number',
                             prefixIcon: const Icon(Iconsax.mobile, size: 20),
                           ),
                           validator: Validators.bangladeshNumberValidator,
@@ -125,7 +169,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           padding: const EdgeInsets.only(bottom: 10),
                           child: Row(
                             children: [
-                              SizedBox(width: 44, height: 44, child: ProductImage(c.product.thumbnail, padding: 3)),
+                              SizedBox(
+                                width: 44,
+                                height: 44,
+                                child: ProductImage(
+                                  c.product.thumbnail,
+                                  padding: 3,
+                                ),
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -135,13 +186,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   style: const TextStyle(fontSize: 13),
                                 ),
                               ),
-                              Text(taka(c.product.price * c.qty), style: const TextStyle(fontWeight: FontWeight.w600)),
+                              Text(
+                                taka(c.product.price * c.qty),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       Divider(color: AppColors.glassBorder),
-                      _line('Delivery', shop.delivery == 0 ? 'FREE' : taka(shop.delivery)),
-                      if (shop.couponDiscount > 0) _line('Voucher', '−${taka(shop.couponDiscount)}'),
+                      _line(
+                        'Delivery',
+                        shop.delivery == 0 ? 'FREE' : taka(shop.delivery),
+                      ),
+                      if (shop.couponDiscount > 0)
+                        _line('Voucher', '−${taka(shop.couponDiscount)}'),
                       const SizedBox(height: 6),
                       Row(
                         children: [
@@ -149,7 +209,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           const Spacer(),
                           GradientText(
                             taka(shop.total),
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ],
                       ),
@@ -158,7 +221,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 const SizedBox(height: 26),
                 if (shop.cart.isNotEmpty)
-                  SlideToPay(label: 'Slide to pay ${taka(shop.total)}', canStart: _validate, onComplete: _pay),
+                  SlideToPay(
+                    label: 'Slide to place order',
+                    canStart: _validate,
+                    onComplete: _pay,
+                  ),
               ],
             ),
           ),
@@ -194,8 +261,14 @@ class _StepHeader extends StatelessWidget {
             width: 24,
             height: 24,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
-            child: Text('$n', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppColors.brandGradient,
+            ),
+            child: Text(
+              '$n',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
           ),
           const SizedBox(width: 10),
           Text(step, style: Txt.h3),
@@ -234,11 +307,17 @@ class _AddressCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(shop.userName ?? 'Home', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    shop.userName ?? 'Home',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     address,
-                    style: Txt.small.copyWith(color: AppColors.textDim, fontWeight: FontWeight.w400),
+                    style: Txt.small.copyWith(
+                      color: AppColors.textDim,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ],
               ),
@@ -262,7 +341,9 @@ class AddressForm extends StatefulWidget {
 class _AddressFormState extends State<AddressForm> {
   final _form = GlobalKey<FormState>();
   late final _name = TextEditingController(
-    text: context.read<Shop>().userName == 'Guest' ? '' : context.read<Shop>().userName,
+    text: context.read<Shop>().userName == 'Guest'
+        ? ''
+        : context.read<Shop>().userName,
   );
   final _phone = TextEditingController();
   final _street = TextEditingController();
@@ -289,7 +370,10 @@ class _AddressFormState extends State<AddressForm> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _name,
-            decoration: const InputDecoration(hintText: 'Full name', prefixIcon: Icon(Iconsax.user, size: 20)),
+            decoration: const InputDecoration(
+              hintText: 'Full name',
+              prefixIcon: Icon(Iconsax.user, size: 20),
+            ),
             validator: Validators.nameValidator,
           ),
           const SizedBox(height: 12),
@@ -354,7 +438,11 @@ class _PayTile extends StatelessWidget {
   final _Pay m;
   final bool selected;
   final VoidCallback onTap;
-  const _PayTile({required this.m, required this.selected, required this.onTap});
+  const _PayTile({
+    required this.m,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -371,15 +459,26 @@ class _PayTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(22),
             gradient: LinearGradient(
               colors: [
-                (selected ? m.color : Colors.white).withValues(alpha: selected ? 0.22 : 0.07),
+                (selected ? m.color : Colors.white).withValues(
+                  alpha: selected ? 0.22 : 0.07,
+                ),
                 Colors.white.withValues(alpha: 0.03),
               ],
             ),
             border: Border.all(
-              color: selected ? m.color.withValues(alpha: 0.8) : AppColors.glassBorder,
+              color: selected
+                  ? m.color.withValues(alpha: 0.8)
+                  : AppColors.glassBorder,
               width: selected ? 1.5 : 1,
             ),
-            boxShadow: selected ? [BoxShadow(color: m.color.withValues(alpha: 0.35), blurRadius: 20)] : null,
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: m.color.withValues(alpha: 0.35),
+                      blurRadius: 20,
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             children: [
@@ -397,10 +496,16 @@ class _PayTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(m.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text(
+                      m.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     Text(
                       m.sub,
-                      style: Txt.small.copyWith(color: AppColors.textDim, fontWeight: FontWeight.w400),
+                      style: Txt.small.copyWith(
+                        color: AppColors.textDim,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ],
                 ),
@@ -412,14 +517,20 @@ class _PayTile extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: selected ? m.color : Colors.transparent,
-                  border: Border.all(color: selected ? m.color : Colors.white38, width: 2),
+                  border: Border.all(
+                    color: selected ? m.color : Colors.white38,
+                    width: 2,
+                  ),
                 ),
                 child: selected
                     ? const Icon(
                         Icons.check_rounded,
                         size: 15,
                         color: Colors.white,
-                      ).animate().scale(curve: Curves.elasticOut, duration: 500.ms)
+                      ).animate().scale(
+                        curve: Curves.elasticOut,
+                        duration: 500.ms,
+                      )
                     : null,
               ),
             ],
@@ -433,7 +544,12 @@ class _PayTile extends StatelessWidget {
 class _CardForm extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController number, expiry, cvv;
-  const _CardForm({required this.formKey, required this.number, required this.expiry, required this.cvv});
+  const _CardForm({
+    required this.formKey,
+    required this.number,
+    required this.expiry,
+    required this.cvv,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -451,7 +567,10 @@ class _CardForm extends StatelessWidget {
                 LengthLimitingTextInputFormatter(16),
                 _CardFormatter(),
               ],
-              decoration: const InputDecoration(hintText: 'Card number', prefixIcon: Icon(Iconsax.card, size: 20)),
+              decoration: const InputDecoration(
+                hintText: 'Card number',
+                prefixIcon: Icon(Iconsax.card, size: 20),
+              ),
               validator: Validators.cardNumberValidator,
             ),
             const SizedBox(height: 12),
@@ -487,7 +606,10 @@ class _CardForm extends StatelessWidget {
 /// Groups card digits as 4-4-4-4.
 class _CardFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final digits = newValue.text.replaceAll(' ', '');
     final b = StringBuffer();
     for (var i = 0; i < digits.length; i++) {
@@ -508,18 +630,31 @@ class SlideToPay extends StatefulWidget {
   final String label;
   final bool Function() canStart;
   final Future<void> Function() onComplete;
-  const SlideToPay({super.key, required this.label, required this.canStart, required this.onComplete});
+  const SlideToPay({
+    super.key,
+    required this.label,
+    required this.canStart,
+    required this.onComplete,
+  });
 
   @override
   State<SlideToPay> createState() => _SlideToPayState();
 }
 
-class _SlideToPayState extends State<SlideToPay> with SingleTickerProviderStateMixin {
+class _SlideToPayState extends State<SlideToPay>
+    with SingleTickerProviderStateMixin {
   double _x = 0;
   bool _busy = false;
   bool _allowed = false;
-  late final AnimationController _back = AnimationController(vsync: this, duration: const Duration(milliseconds: 500))
-    ..addListener(() => setState(() => _x = _from * (1 - Curves.elasticOut.transform(_back.value))));
+  late final AnimationController _back =
+      AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 500),
+      )..addListener(
+        () => setState(
+          () => _x = _from * (1 - Curves.elasticOut.transform(_back.value)),
+        ),
+      );
   double _from = 0;
 
   @override
@@ -533,7 +668,7 @@ class _SlideToPayState extends State<SlideToPay> with SingleTickerProviderStateM
     const h = 64.0;
     return LayoutBuilder(
       builder: (context, box) {
-        final max = box.maxWidth - h;
+        final max = (box.maxWidth - h).clamp(1.0, double.infinity);
         final pct = (_x / max).clamp(0.0, 1.0);
         return Container(
           height: h,
@@ -546,7 +681,12 @@ class _SlideToPayState extends State<SlideToPay> with SingleTickerProviderStateM
               ],
             ),
             border: Border.all(color: Colors.white24),
-            boxShadow: [BoxShadow(color: AppColors.violet.withValues(alpha: 0.3 + pct * 0.4), blurRadius: 24)],
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.violet.withValues(alpha: 0.3 + pct * 0.4),
+                blurRadius: 24,
+              ),
+            ],
           ),
           child: Stack(
             alignment: Alignment.centerLeft,
@@ -555,10 +695,16 @@ class _SlideToPayState extends State<SlideToPay> with SingleTickerProviderStateM
               Center(
                 child: Opacity(
                   opacity: _busy ? 0 : 1 - pct,
-                  child: Text(
-                    widget.label,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                  ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 1800.ms, color: Colors.white),
+                  child:
+                      Text(
+                            widget.label,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                            ),
+                          )
+                          .animate(onPlay: (c) => c.repeat())
+                          .shimmer(duration: 1800.ms, color: Colors.white),
                 ),
               ),
               if (_busy)
@@ -566,7 +712,10 @@ class _SlideToPayState extends State<SlideToPay> with SingleTickerProviderStateM
                   child: SizedBox(
                     width: 26,
                     height: 26,
-                    child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               Positioned(
@@ -576,7 +725,11 @@ class _SlideToPayState extends State<SlideToPay> with SingleTickerProviderStateM
                     _allowed = widget.canStart();
                     if (!_allowed) {
                       HapticFeedback.heavyImpact();
-                      toast(context, 'Please complete your payment details', icon: Icons.error_outline_rounded);
+                      toast(
+                        context,
+                        'Please complete your payment details',
+                        icon: Icons.error_outline_rounded,
+                      );
                     }
                   },
                   onHorizontalDragUpdate: (d) {
@@ -589,7 +742,8 @@ class _SlideToPayState extends State<SlideToPay> with SingleTickerProviderStateM
                     if (_x >= max * 0.92) {
                       HapticFeedback.heavyImpact();
                       setState(() => _busy = true);
-                      await Future.delayed(const Duration(milliseconds: 1400));
+                      await Future.delayed(const Duration(milliseconds: 500));
+                      if (!mounted) return;
                       await widget.onComplete();
                     } else {
                       _from = _x;
@@ -607,9 +761,17 @@ class _SlideToPayState extends State<SlideToPay> with SingleTickerProviderStateM
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white,
-                          boxShadow: [BoxShadow(color: AppColors.magenta.withValues(alpha: 0.8), blurRadius: 18)],
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.magenta.withValues(alpha: 0.8),
+                              blurRadius: 18,
+                            ),
+                          ],
                         ),
-                        child: const Icon(Iconsax.arrow_right_3, color: AppColors.violet),
+                        child: const Icon(
+                          Iconsax.arrow_right_3,
+                          color: AppColors.violet,
+                        ),
                       ),
                     ),
                   ),

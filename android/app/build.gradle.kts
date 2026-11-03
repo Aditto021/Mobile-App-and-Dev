@@ -29,11 +29,19 @@ android {
         versionName = flutter.versionName
     }
 
+    val releaseKeystore = System.getenv("FERIWALA_KEYSTORE_PATH")
+    if (!releaseKeystore.isNullOrBlank()) {
+        signingConfigs.create("distribution") {
+            storeFile = file(releaseKeystore)
+            storePassword = System.getenv("FERIWALA_STORE_PASSWORD")?.takeIf { it.isNotBlank() } ?: "android"
+            keyAlias = System.getenv("FERIWALA_KEY_ALIAS")?.takeIf { it.isNotBlank() } ?: "androiddebugkey"
+            keyPassword = System.getenv("FERIWALA_KEY_PASSWORD")?.takeIf { it.isNotBlank() } ?: "android"
+        }
+    }
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // CI receives the same existing key through an encrypted secret.
+            signingConfig = signingConfigs.getByName(if (releaseKeystore.isNullOrBlank()) "debug" else "distribution")
         }
     }
 }

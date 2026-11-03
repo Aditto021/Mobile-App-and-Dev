@@ -9,8 +9,11 @@ class Review {
   final String name;
   const Review(this.rating, this.comment, this.name);
 
-  factory Review.fromJson(Map<String, dynamic> j) =>
-      Review((j['rating'] as num).toInt(), j['comment'] as String, j['name'] as String);
+  factory Review.fromJson(Map<String, dynamic> j) => Review(
+    (j['rating'] as num).toInt(),
+    j['comment'] as String,
+    j['name'] as String,
+  );
 }
 
 class Product {
@@ -42,7 +45,8 @@ class Product {
     required this.reviews,
   });
 
-  int get originalPrice => discount <= 0 ? price : (price * 100 / (100 - discount)).round();
+  int get originalPrice =>
+      discount <= 0 ? price : (price * 100 / (100 - discount)).round();
 
   /// Deterministic "sold" count so the number is stable between launches.
   int get sold => 120 + (id * 7919) % 4800;
@@ -59,7 +63,9 @@ class Product {
     brand: j['brand'] as String,
     thumbnail: j['thumbnail'] as String,
     images: (j['images'] as List).cast<String>(),
-    reviews: (j['reviews'] as List).map((r) => Review.fromJson(r as Map<String, dynamic>)).toList(),
+    reviews: (j['reviews'] as List)
+        .map((r) => Review.fromJson(r as Map<String, dynamic>))
+        .toList(),
   );
 }
 
@@ -73,33 +79,142 @@ class CategoryInfo {
 }
 
 const categories = <CategoryInfo>[
-  CategoryInfo('smartphones', 'Phones', 'ফোন', Iconsax.mobile, AppColors.violetLight),
-  CategoryInfo('laptops', 'Laptops', 'ল্যাপটপ', Iconsax.monitor, AppColors.cyan),
-  CategoryInfo('mobile-accessories', 'Gadgets', 'গ্যাজেট', Iconsax.headphone, AppColors.magenta),
-  CategoryInfo('tablets', 'Tablets', 'ট্যাবলেট', Iconsax.monitor_mobbile, AppColors.indigo),
-  CategoryInfo('mens-watches', 'Watches', 'ঘড়ি', Iconsax.watch, AppColors.gold),
-  CategoryInfo('fragrances', 'Fragrance', 'সুগন্ধি', Iconsax.magic_star, AppColors.rose),
-  CategoryInfo('beauty', 'Beauty', 'রূপচর্চা', Iconsax.brush, AppColors.magenta),
-  CategoryInfo('skin-care', 'Skin Care', 'ত্বকের যত্ন', Iconsax.lovely, AppColors.mint),
+  CategoryInfo(
+    'smartphones',
+    'Phones',
+    'ফোন',
+    Iconsax.mobile,
+    AppColors.violetLight,
+  ),
+  CategoryInfo(
+    'laptops',
+    'Laptops',
+    'ল্যাপটপ',
+    Iconsax.monitor,
+    AppColors.cyan,
+  ),
+  CategoryInfo(
+    'mobile-accessories',
+    'Gadgets',
+    'গ্যাজেট',
+    Iconsax.headphone,
+    AppColors.magenta,
+  ),
+  CategoryInfo(
+    'tablets',
+    'Tablets',
+    'ট্যাবলেট',
+    Iconsax.monitor_mobbile,
+    AppColors.indigo,
+  ),
+  CategoryInfo(
+    'mens-watches',
+    'Watches',
+    'ঘড়ি',
+    Iconsax.watch,
+    AppColors.gold,
+  ),
+  CategoryInfo(
+    'fragrances',
+    'Fragrance',
+    'সুগন্ধি',
+    Iconsax.magic_star,
+    AppColors.rose,
+  ),
+  CategoryInfo(
+    'beauty',
+    'Beauty',
+    'রূপচর্চা',
+    Iconsax.brush,
+    AppColors.magenta,
+  ),
+  CategoryInfo(
+    'skin-care',
+    'Skin Care',
+    'ত্বকের যত্ন',
+    Iconsax.lovely,
+    AppColors.mint,
+  ),
   CategoryInfo('mens-shirts', 'Men', 'পুরুষ', Iconsax.man, AppColors.cyan),
-  CategoryInfo('womens-dresses', 'Women', 'নারী', Iconsax.woman, AppColors.rose),
-  CategoryInfo('womens-bags', 'Bags', 'ব্যাগ', Iconsax.bag_2, AppColors.violetLight),
-  CategoryInfo('womens-jewellery', 'Jewellery', 'গহনা', Iconsax.crown, AppColors.gold),
+  CategoryInfo(
+    'womens-dresses',
+    'Women',
+    'নারী',
+    Iconsax.woman,
+    AppColors.rose,
+  ),
+  CategoryInfo(
+    'womens-bags',
+    'Bags',
+    'ব্যাগ',
+    Iconsax.bag_2,
+    AppColors.violetLight,
+  ),
+  CategoryInfo(
+    'womens-jewellery',
+    'Jewellery',
+    'গহনা',
+    Iconsax.crown,
+    AppColors.gold,
+  ),
   CategoryInfo('mens-shoes', 'Shoes', 'জুতা', Iconsax.ruler, AppColors.indigo),
   CategoryInfo('womens-shoes', 'Heels', 'হিল', Iconsax.star, AppColors.magenta),
-  CategoryInfo('womens-watches', 'Her Watch', 'নারীর ঘড়ি', Iconsax.watch_status, AppColors.rose),
-  CategoryInfo('sunglasses', 'Sunglasses', 'সানগ্লাস', Iconsax.glass, AppColors.cyan),
+  CategoryInfo(
+    'womens-watches',
+    'Her Watch',
+    'নারীর ঘড়ি',
+    Iconsax.watch_status,
+    AppColors.rose,
+  ),
+  CategoryInfo(
+    'sunglasses',
+    'Sunglasses',
+    'সানগ্লাস',
+    Iconsax.glass,
+    AppColors.cyan,
+  ),
   CategoryInfo('tops', 'Tops', 'টপস', Iconsax.woman, AppColors.violetLight),
-  CategoryInfo('groceries', 'Groceries', 'মুদি', Iconsax.shopping_cart, AppColors.mint),
-  CategoryInfo('kitchen-accessories', 'Kitchen', 'রান্নাঘর', Iconsax.coffee, AppColors.gold),
-  CategoryInfo('furniture', 'Furniture', 'ফার্নিচার', Iconsax.lamp, AppColors.indigo),
-  CategoryInfo('home-decoration', 'Decor', 'সাজসজ্জা', Iconsax.home_2, AppColors.magenta),
-  CategoryInfo('sports-accessories', 'Sports', 'খেলাধুলা', Iconsax.medal, AppColors.mint),
+  CategoryInfo(
+    'groceries',
+    'Groceries',
+    'মুদি',
+    Iconsax.shopping_cart,
+    AppColors.mint,
+  ),
+  CategoryInfo(
+    'kitchen-accessories',
+    'Kitchen',
+    'রান্নাঘর',
+    Iconsax.coffee,
+    AppColors.gold,
+  ),
+  CategoryInfo(
+    'furniture',
+    'Furniture',
+    'ফার্নিচার',
+    Iconsax.lamp,
+    AppColors.indigo,
+  ),
+  CategoryInfo(
+    'home-decoration',
+    'Decor',
+    'সাজসজ্জা',
+    Iconsax.home_2,
+    AppColors.magenta,
+  ),
+  CategoryInfo(
+    'sports-accessories',
+    'Sports',
+    'খেলাধুলা',
+    Iconsax.medal,
+    AppColors.mint,
+  ),
   CategoryInfo('motorcycle', 'Bikes', 'বাইক', Iconsax.flash, AppColors.rose),
   CategoryInfo('vehicle', 'Cars', 'গাড়ি', Iconsax.car, AppColors.cyan),
 ];
 
-CategoryInfo categoryOf(String id) => categories.firstWhere((c) => c.id == id, orElse: () => categories.first);
+CategoryInfo categoryOf(String id) =>
+    categories.firstWhere((c) => c.id == id, orElse: () => categories.first);
 
 class CartItem {
   final Product product;
@@ -112,7 +227,10 @@ enum OrderStatus { placed, packed, shipped, delivered }
 class Order {
   final String id;
   final DateTime date;
-  final List<({int productId, String title, String thumbnail, int price, int qty})> lines;
+  final List<
+    ({int productId, String title, String thumbnail, int price, int qty})
+  >
+  lines;
   final int total;
   final String payment;
   final String address;
@@ -139,7 +257,13 @@ class Order {
     'address': address,
     'lines': [
       for (final l in lines)
-        {'productId': l.productId, 'title': l.title, 'thumbnail': l.thumbnail, 'price': l.price, 'qty': l.qty},
+        {
+          'productId': l.productId,
+          'title': l.title,
+          'thumbnail': l.thumbnail,
+          'price': l.price,
+          'qty': l.qty,
+        },
     ],
   };
 

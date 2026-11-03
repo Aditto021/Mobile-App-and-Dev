@@ -18,13 +18,18 @@ class WishlistScreen extends StatelessWidget {
     final items = context.watch<Shop>().wishProducts;
     return Column(
       children: [
-        TopBar(title: 'Wishlist', subtitle: items.isEmpty ? null : '${items.length} saved', back: false),
+        TopBar(
+          title: 'Wishlist',
+          subtitle: items.isEmpty ? null : '${items.length} saved',
+          back: false,
+        ),
         Expanded(
           child: items.isEmpty
               ? EmptyState(
                   icon: Iconsax.heart,
                   title: 'Nothing saved yet',
-                  message: 'Tap the heart on any product to keep it here for later.',
+                  message:
+                      'Tap the heart on any product to keep it here for later.',
                   action: 'Discover products',
                   onAction: () => ShellScope.of(context)?.goTab(0),
                 )

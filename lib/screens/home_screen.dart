@@ -1,13 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import '../config/brand.dart';
 import '../data/models.dart';
 import '../data/shop.dart';
 import '../theme/app_theme.dart';
@@ -120,7 +118,9 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${_greeting()}, $name 👋',
+                  '${_greeting()}, $name',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: Txt.small.copyWith(color: AppColors.textDim),
                 ),
                 const BrandWordmark(size: 22),
@@ -202,20 +202,20 @@ const _banners = [
     'EVERYDAY ESSENTIALS',
     'Find your next\nfavourite phone',
     'Shop phones',
-    [Color(0xFF6D28D9), Color(0xFFDB2777)],
+    [Color(0xFF392D53), Color(0xFF72526D)],
     'smartphones',
   ),
   _Banner('NEW SEASON', 'Find your\nsignature scent', 'Explore', [
-    Color(0xFF4338CA),
-    Color(0xFF9333EA),
+    Color(0xFF343148),
+    Color(0xFF665977),
   ], 'fragrances'),
   _Banner('WORK FROM ANYWHERE', 'Laptops for\nwork and play', 'View laptops', [
-    Color(0xFF7C3AED),
-    Color(0xFF0891B2),
+    Color(0xFF293A43),
+    Color(0xFF4C6C71),
   ], 'laptops'),
   _Banner('TIME IS LUXURY', 'Make time for\ngreat style', 'Discover', [
-    Color(0xFFA21CAF),
-    Color(0xFF6D28D9),
+    Color(0xFF4C3940),
+    Color(0xFF84695A),
   ], 'mens-watches'),
 ];
 
@@ -237,13 +237,14 @@ class _HeroCarouselState extends State<_HeroCarousel> {
     final autoPlayEnabled =
         !MediaQuery.disableAnimationsOf(context) &&
         !MediaQuery.accessibleNavigationOf(context) &&
-        TickerMode.of(context);
+        TickerMode.valuesOf(context).enabled;
     if (autoPlayEnabled == _autoPlayEnabled) return;
     _autoPlayEnabled = autoPlayEnabled;
     _autoPlay?.cancel();
     if (autoPlayEnabled) {
       _autoPlay = Timer.periodic(const Duration(seconds: 6), (_) {
         if (!_pc.hasClients || !mounted) return;
+        if (_pc.position.isScrollingNotifier.value) return;
         final current = _pc.page?.round() ?? 0;
         _pc.animateToPage(
           (current + 1) % _banners.length,
@@ -267,7 +268,12 @@ class _HeroCarouselState extends State<_HeroCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 176,
+          height:
+              210 +
+              ((MediaQuery.textScalerOf(context).scale(1) - 1) * 80).clamp(
+                0,
+                100,
+              ),
           child: PageView.builder(
             controller: _pc,
             itemCount: _banners.length,
@@ -280,14 +286,14 @@ class _HeroCarouselState extends State<_HeroCarousel> {
                   onTap: () =>
                       go(context, ProductListScreen.category(banner.category)),
                   child: GlassTile(
-                    radius: 20,
+                    radius: 26,
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: banner.colors,
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       child: Row(
                         children: [
                           Expanded(
@@ -302,7 +308,7 @@ class _HeroCarouselState extends State<_HeroCarousel> {
                                   style: const TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.8,
+                                    letterSpacing: 1.6,
                                     color: Colors.white70,
                                   ),
                                 ),
@@ -312,7 +318,7 @@ class _HeroCarouselState extends State<_HeroCarousel> {
                                   maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 21,
                                     height: 1.25,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -358,8 +364,10 @@ class _HeroCarouselState extends State<_HeroCarousel> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(14),
                               child: SizedBox(
-                                width: 104,
-                                height: 124,
+                                width: MediaQuery.sizeOf(context).width < 360
+                                    ? 82
+                                    : 104,
+                                height: 140,
                                 child: ProductImage(items.first.thumbnail),
                               ),
                             ),
@@ -402,7 +410,12 @@ class _CategoryStrip extends StatelessWidget {
           onAction: () => ShellScope.of(context)?.goTab(1),
         ),
         SizedBox(
-          height: 96,
+          height:
+              96 +
+              ((MediaQuery.textScalerOf(context).scale(1) - 1) * 45).clamp(
+                0,
+                80,
+              ),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -486,7 +499,12 @@ class _FlashSale extends StatelessWidget {
           onAction: () => go(context, ProductListScreen.flash()),
         ),
         SizedBox(
-          height: 250,
+          height:
+              250 +
+              ((MediaQuery.textScalerOf(context).scale(1) - 1) * 100).clamp(
+                0,
+                150,
+              ),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -562,132 +580,6 @@ class _FlashCard extends StatelessWidget {
   }
 }
 
-/// Voucher ticket with perforated edge and a copy-code action.
-class _VoucherCard extends StatelessWidget {
-  const _VoucherCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 26),
-      child: Pressable(
-        scale: 0.98,
-        onTap: () {
-          Clipboard.setData(const ClipboardData(text: Brand.couponCode));
-          HapticFeedback.mediumImpact();
-          toast(
-            context,
-            'Code ${Brand.couponCode} copied — apply it in your cart',
-            icon: Iconsax.ticket_discount,
-          );
-        },
-        child: ClipPath(
-          clipper: _TicketClipper(),
-          child: Container(
-            height: 92,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF632B65),
-                  const Color(0xFF39305E),
-                  const Color(0xFF1B5261),
-                ],
-              ),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 22),
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppColors.brandGradient,
-                  ),
-                  child: const Icon(
-                    Iconsax.ticket_discount,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${Brand.couponPercent}% off your first order',
-                        style: Txt.h3,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Up to ${taka(Brand.couponMaxDiscount)} · tap to copy',
-                        style: Txt.small.copyWith(color: AppColors.textDim),
-                      ),
-                    ],
-                  ),
-                ),
-                CustomPaint(size: const Size(1, 60), painter: _DashPainter()),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: RotatedBox(
-                    quarterTurns: 3,
-                    child: Text(
-                      Brand.couponCode,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.5,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TicketClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size s) {
-    const r = 12.0;
-    final notchX = s.width - 50;
-    final p = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(Offset.zero & s, const Radius.circular(22)),
-      );
-    final holes = Path()
-      ..addOval(Rect.fromCircle(center: Offset(notchX, 0), radius: r))
-      ..addOval(Rect.fromCircle(center: Offset(notchX, s.height), radius: r));
-    return Path.combine(PathOperation.difference, p, holes);
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-class _DashPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..color = Colors.white.withValues(alpha: 0.35)
-      ..strokeWidth = 1.2;
-    for (double y = 0; y < size.height; y += 7) {
-      canvas.drawLine(Offset(0, y), Offset(0, y + 3.5), p);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 class _HorizontalShelf extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -710,7 +602,12 @@ class _HorizontalShelf extends StatelessWidget {
           onAction: () => go(context, ProductListScreen.topRated()),
         ),
         SizedBox(
-          height: 328,
+          height:
+              328 +
+              ((MediaQuery.textScalerOf(context).scale(1) - 1) * 150).clamp(
+                0,
+                180,
+              ),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),

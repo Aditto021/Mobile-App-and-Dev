@@ -33,6 +33,7 @@ class _VoucherCardState extends State<VoucherCard>
     setState(() => _used = true);
     HapticFeedback.mediumImpact();
     await Clipboard.setData(const ClipboardData(text: Brand.couponCode));
+    if (!mounted) return;
 
     final reduceMotion =
         MediaQuery.disableAnimationsOf(context) ||
@@ -213,7 +214,7 @@ class _VoucherCardState extends State<VoucherCard>
                             child: Opacity(
                               opacity: 1 - t,
                               child: const CustomPaint(
-                                size: const Size(1, 60),
+                                size: Size(1, 60),
                                 painter: _PerforationPainter(),
                               ),
                             ),

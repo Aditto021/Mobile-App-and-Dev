@@ -15,7 +15,10 @@ void patch(String path, List<(RegExp, String)> rules) {
   if (!f.existsSync()) return;
   var s = f.readAsStringSync();
   for (final (re, rep) in rules) {
-    s = s.replaceAllMapped(re, (m) => rep.replaceAll(r'$1', m.group(1) ?? ''));
+    s = s.replaceAllMapped(re, (m) {
+      final capture = m.groupCount > 0 ? m.group(1) ?? '' : '';
+      return rep.replaceAll(r'$1', capture);
+    });
   }
   f.writeAsStringSync(s);
   print('updated $path');
