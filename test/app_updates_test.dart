@@ -1,4 +1,4 @@
-import 'package:feriwala/services/app_updates.dart';
+import 'package:feriwala/core/services/app_update_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

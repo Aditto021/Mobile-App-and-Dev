@@ -36,3 +36,18 @@ For manual publishing, authenticate with `GITHUB_TOKEN` (Contents: write), then 
 - Local visual previews are generated in `build/qa/`. Remote images use offline placeholders in tests.
 
 Physical-device checks are still needed for sustained 120 fps and installation through a live update feed. Hardware, thermal limits, and Android settings determine actual frame rate.
+
+## Code layout
+
+```
+lib/
+  main.dart, app.dart   entry point and MaterialApp
+  core/                 brand config, theme, validators, formatters, services
+  data/models/          Product, Review, Category, CartItem, Order
+  data/state/           Shop — all app state (Provider + shared_preferences)
+  features/<name>/      one folder per screen group
+  shared/widgets/       reusable glass, product, logo and background widgets
+```
+
+Every Dart file opens with a `/// MODULE:` header. See
+[docs/VIVA_GUIDE.md](docs/VIVA_GUIDE.md) for a module-by-module walkthrough.

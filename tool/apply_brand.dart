@@ -1,12 +1,14 @@
 // ignore_for_file: avoid_print
-// Copies the brand values from lib/config/brand.dart into the platform
+// Copies the brand values from lib/core/config/brand_config.dart into the platform
 // files Dart code can't reach. Run from the app folder:
 //   dart run tool/apply_brand.dart
 import 'dart:io';
 
 String read(String key, String src) {
   final m = RegExp("static const $key = '([^']*)';").firstMatch(src);
-  if (m == null) throw 'Brand.$key not found in lib/config/brand.dart';
+  if (m == null) {
+    throw 'Brand.$key not found in lib/core/config/brand_config.dart';
+  }
   return m.group(1)!;
 }
 
@@ -25,11 +27,13 @@ void patch(String path, List<(RegExp, String)> rules) {
 }
 
 void main() {
-  final src = File('lib/config/brand.dart').readAsStringSync();
+  final src = File('lib/core/config/brand_config.dart').readAsStringSync();
   final name = read('appName', src);
   final desc = read('description', src);
 
-  patch('android/app/src/main/AndroidManifest.xml', [(RegExp(r'android:label="[^"]*"'), 'android:label="$name"')]);
+  patch('android/app/src/main/AndroidManifest.xml', [
+    (RegExp(r'android:label="[^"]*"'), 'android:label="$name"'),
+  ]);
   patch('web/index.html', [
     (RegExp(r'<title>[^<]*</title>'), '<title>$name</title>'),
     (
@@ -48,6 +52,8 @@ void main() {
     (RegExp(r'"short_name": "[^"]*"'), '"short_name": "$name"'),
     (RegExp(r'"description": "[^"]*"'), '"description": "$desc"'),
   ]);
-  patch('pubspec.yaml', [(RegExp(r'^description: .*$', multiLine: true), 'description: "$desc"')]);
+  patch('pubspec.yaml', [
+    (RegExp(r'^description: .*$', multiLine: true), 'description: "$desc"'),
+  ]);
   print('Brand applied: $name');
 }

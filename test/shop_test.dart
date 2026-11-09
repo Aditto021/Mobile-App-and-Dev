@@ -1,7 +1,7 @@
+import 'package:feriwala/core/config/brand_config.dart';
+import 'package:feriwala/data/state/shop_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:feriwala/config/brand.dart';
-import 'package:feriwala/data/shop.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +22,26 @@ void main() {
     expect(shop.qtyOf(product.id), 2);
     shop.setQty(product, 0);
     expect(shop.total, 0);
+    shop.dispose();
+  });
+
+  test('catalogue views are not cached empty before loading', () async {
+    final shop = Shop();
+    expect(shop.flashSale, isEmpty);
+    expect(
+      shop.inCategory(shop.products.firstOrNull?.category ?? 'x'),
+      isEmpty,
+    );
+    await shop.load();
+    final category = shop.products.first.category;
+    expect(shop.flashSale, isNotEmpty);
+    expect(shop.topRated, isNotEmpty);
+    expect(shop.forYou, hasLength(shop.products.length));
+    expect(shop.inCategory(category), isNotEmpty);
+    expect(
+      shop.inCategory(category).every((p) => p.category == category),
+      isTrue,
+    );
     shop.dispose();
   });
 

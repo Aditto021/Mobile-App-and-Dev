@@ -1,22 +1,22 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:feriwala/data/shop.dart';
-import 'package:feriwala/screens/account_screen.dart';
-import 'package:feriwala/screens/auth_screen.dart';
-import 'package:feriwala/screens/cart_screen.dart';
-import 'package:feriwala/screens/checkout_screen.dart';
-import 'package:feriwala/screens/home_screen.dart';
-import 'package:feriwala/screens/categories_screen.dart';
-import 'package:feriwala/screens/wishlist_screen.dart';
-import 'package:feriwala/screens/orders_screen.dart';
-import 'package:feriwala/screens/order_success_screen.dart';
-import 'package:feriwala/screens/search_screen.dart';
-import 'package:feriwala/screens/onboarding_screen.dart';
-import 'package:feriwala/screens/product_detail_screen.dart';
-import 'package:feriwala/screens/splash_screen.dart';
-import 'package:feriwala/theme/app_theme.dart';
-import 'package:feriwala/widgets/space_background.dart';
+import 'package:feriwala/core/theme/app_theme.dart';
+import 'package:feriwala/data/state/shop_state.dart';
+import 'package:feriwala/features/account/account_screen.dart';
+import 'package:feriwala/features/auth/auth_screen.dart';
+import 'package:feriwala/features/cart/cart_screen.dart';
+import 'package:feriwala/features/categories/categories_screen.dart';
+import 'package:feriwala/features/checkout/checkout_screen.dart';
+import 'package:feriwala/features/checkout/order_success_screen.dart';
+import 'package:feriwala/features/home/home_screen.dart';
+import 'package:feriwala/features/onboarding/onboarding_screen.dart';
+import 'package:feriwala/features/orders/orders_screen.dart';
+import 'package:feriwala/features/products/product_detail_screen.dart';
+import 'package:feriwala/features/search/search_screen.dart';
+import 'package:feriwala/features/splash/splash_screen.dart';
+import 'package:feriwala/features/wishlist/wishlist_screen.dart';
+import 'package:feriwala/shared/widgets/space_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -118,9 +118,15 @@ void main() {
           ),
         );
         if (screen == 'splash') {
-          await tester.runAsync(() => precacheImage(
-            const ResizeImage(AssetImage('assets/brand/feriwala_cycle_vendor.png'), width: 1024),
-            tester.element(find.byType(SplashScreen))));
+          await tester.runAsync(
+            () => precacheImage(
+              const ResizeImage(
+                AssetImage('assets/brand/feriwala_cycle_vendor.png'),
+                width: 1024,
+              ),
+              tester.element(find.byType(SplashScreen)),
+            ),
+          );
         }
         await tester.pump(const Duration(milliseconds: 700));
         await tester.runAsync(

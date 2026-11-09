@@ -1,4 +1,4 @@
-import 'package:feriwala/utils/validators.dart';
+import 'package:feriwala/core/utils/validators.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
