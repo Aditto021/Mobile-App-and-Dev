@@ -49,5 +49,4 @@ lib/
   shared/widgets/       reusable glass, product, logo and background widgets
 ```
 
-Every Dart file opens with a `/// MODULE:` header. See
-[docs/VIVA_GUIDE.md](docs/VIVA_GUIDE.md) for a module-by-module walkthrough.
+Every Dart file opens with a `/// MODULE:` header naming the module and its classes.
