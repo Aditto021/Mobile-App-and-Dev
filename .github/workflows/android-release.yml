@@ -20,8 +20,8 @@ jobs:
   release:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -75,7 +75,7 @@ jobs:
           FERIWALA_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           FERIWALA_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: ./scripts/publish_release.ps1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: success() && env.SKIP_RELEASE != 'true'
         with:
           name: FeriWala-Android
