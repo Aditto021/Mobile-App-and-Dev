@@ -79,7 +79,20 @@ jobs:
           FERIWALA_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           FERIWALA_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           FERIWALA_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-        run: ./scripts/publish_release.ps1
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP 'release.log'
+          try {
+            ./scripts/publish_release.ps1 *>&1 | Tee-Object -FilePath $log
+          } catch {
+            # Show why on the run's summary page, not only in the step log.
+            $lines = @(Get-Content $log -ErrorAction SilentlyContinue)
+            $hits = $lines | Select-String -Pattern 'error|What went wrong|Exception|failed|FAILURE|\[E\]|Some tests' | Select-Object -Last 25
+            $text = (@($hits | ForEach-Object Line) + '--- last lines ---' + ($lines | Select-Object -Last 20) + '--- thrown ---' + ($_ | Out-String)) -join "`n"
+            $text = $text -replace '\x1b\[[0-9;]*m', ''
+            if ($text.Length -gt 6000) { $text = $text.Substring($text.Length - 6000) }
+            Write-Host ("::error title=Release failed::" + ($text -replace '%', '%25' -replace "`r", '' -replace "`n", '%0A'))
+            throw
+          }
       - uses: actions/upload-artifact@v5
         if: success() && env.SKIP_RELEASE != 'true'
         with:
