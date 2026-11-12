@@ -1,7 +1,15 @@
 name: Android release
+# Every push to main that changes the app becomes a phone update: the
+# build gets its own number, is published on GitHub Releases, and installed
+# apps offer it under Account > App updates (and on launch).
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'store/**'
+      - 'server/**'
   workflow_dispatch:
 permissions:
   contents: write
@@ -36,6 +44,28 @@ jobs:
           $keyPath = Join-Path $env:GITHUB_WORKSPACE '.secrets/release.keystore'
           [IO.File]::WriteAllBytes($keyPath, [Convert]::FromBase64String($env:KEYSTORE_BASE64))
           "FERIWALA_KEYSTORE_PATH=$keyPath" >> $env:GITHUB_ENV
+      - name: Number this build
+        if: env.SKIP_RELEASE != 'true'
+        shell: pwsh
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          # Only in this runner's copy: pubspec.yaml in the repo is not changed.
+          $text = Get-Content pubspec.yaml -Raw
+          $m = [regex]::Match($text, '(?m)^version:\s*(\d+)\.(\d+)\.(\d+)\+(\d+)')
+          if (-not $m.Success) { throw 'pubspec.yaml needs version: X.Y.Z+N' }
+          # Always higher than the last build: pubspec code + 100 + run number.
+          $code = [long]$m.Groups[4].Value + 100 + [long]$env:RUN_NUMBER
+          # Patch number grows with each run: 1.3.0 -> 1.3.6, 1.3.7, ...
+          $name = "$($m.Groups[1].Value).$($m.Groups[2].Value).$([long]$m.Groups[3].Value + [long]$env:RUN_NUMBER)"
+          $text = $text.Remove($m.Index, $m.Length).Insert($m.Index, "version: $name+$code")
+          [IO.File]::WriteAllText((Resolve-Path pubspec.yaml), $text)
+          Write-Host "Building feriWala $name (code $code)"
+          # The commit message (first line) becomes the update note on phones.
+          $note = (($env:COMMIT_MESSAGE -split "`n")[0]).Trim()
+          if ($note.Length -gt 300) { $note = $note.Substring(0, 300) }
+          if ($note) { "RELEASE_NOTES=$note" >> $env:GITHUB_ENV }
       - name: Build, test, verify, and publish
         if: env.SKIP_RELEASE != 'true'
         shell: pwsh

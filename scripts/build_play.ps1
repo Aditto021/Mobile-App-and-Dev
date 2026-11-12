@@ -23,6 +23,10 @@ try {
     if (-not $SkipChecks) {
         flutter pub get
         if ($LASTEXITCODE -ne 0) { throw 'Dependency resolution failed.' }
+        # The backend is analyzed and tested with the app, so fetch its packages too.
+        Push-Location server
+        try { flutter pub get } finally { Pop-Location }
+        if ($LASTEXITCODE -ne 0) { throw 'Server dependency resolution failed.' }
         flutter analyze
         if ($LASTEXITCODE -ne 0) { throw 'Static analysis failed.' }
         flutter test

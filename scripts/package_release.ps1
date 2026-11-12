@@ -12,6 +12,10 @@ try {
     if (-not $SkipBuild) {
         flutter pub get
         if ($LASTEXITCODE -ne 0) { throw 'Dependency resolution failed.' }
+        # The backend is analyzed and tested with the app, so fetch its packages too.
+        Push-Location server
+        try { flutter pub get } finally { Pop-Location }
+        if ($LASTEXITCODE -ne 0) { throw 'Server dependency resolution failed.' }
         flutter analyze
         if ($LASTEXITCODE -ne 0) { throw 'Static analysis failed.' }
         flutter test
@@ -47,7 +51,7 @@ try {
         packageId = 'com.feriwala.app'; versionName = $versionName; versionCode = $versionCode
         apkUrl = "https://github.com/Aditto021/Mobile-App-and-Dev/releases/download/v$versionName/$name"
         sha256 = $hash; sizeBytes = (Get-Item -LiteralPath $destination).Length
-        releaseNotes = '210 real products from Bangladeshi shops, online accounts that sync your cart and wishlist, server-checked orders, account deletion and a privacy policy.'
+        releaseNotes = if ($env:RELEASE_NOTES) { $env:RELEASE_NOTES } else { '210 real products from Bangladeshi shops, online accounts that sync your cart and wishlist, server-checked orders, account deletion and a privacy policy.' }
     }
     [System.IO.File]::WriteAllText((Join-Path $OutputDirectory 'feriwala-update.json'), ($metadata | ConvertTo-Json), [System.Text.UTF8Encoding]::new($false))
     # Delete only obsolete distributable files in this exact output directory.
