@@ -1,7 +1,8 @@
 /// MODULE: Account screen — Profile, order/wishlist stats, vouchers,
 /// settings, help, app updates and sign out.
 ///
-/// Contains: AccountScreen, _SyncStatus, _Stat.
+/// Contains: AccountScreen, _SyncStatus, _Stat. Also hosts the privacy
+/// policy sheet and account deletion.
 library;
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import '../../core/config/brand_config.dart';
 import '../../core/services/app_update_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../data/api/api_client.dart';
 import '../../data/state/shop_state.dart';
 import '../../shared/widgets/brand_logo.dart';
 import '../../shared/widgets/common_widgets.dart';
@@ -23,6 +25,7 @@ import '../../shared/widgets/space_background.dart';
 import '../auth/auth_screen.dart';
 import '../checkout/checkout_screen.dart';
 import '../orders/orders_screen.dart';
+import 'privacy_policy.dart';
 import '../shell/main_shell.dart';
 
 class AccountScreen extends StatelessWidget {
@@ -71,11 +74,19 @@ class AccountScreen extends StatelessWidget {
         () => _about(context),
       ),
       (
-        Iconsax.refresh,
-        'App updates',
-        'Check for the latest version',
-        () => checkForAppUpdates(context),
+        Iconsax.shield_tick,
+        'Privacy policy',
+        'What we keep and why',
+        () => showGlassSheet(context, const PrivacyPolicySheet()),
       ),
+      // Play builds get updates from Google Play instead.
+      if (AppUpdates.supported)
+        (
+          Iconsax.refresh,
+          'App updates',
+          'Check for the latest version',
+          () => checkForAppUpdates(context),
+        ),
     ];
     return ListView(
       physics: const BouncingScrollPhysics(),
@@ -327,7 +338,22 @@ class AccountScreen extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 26),
+        if (shop.userName != null)
+          Center(
+            child: TextButton.icon(
+              onPressed: () => _deleteAccount(context, shop),
+              icon: const Icon(
+                Iconsax.profile_delete,
+                size: 16,
+                color: AppColors.textFaint,
+              ),
+              label: Text(
+                'Delete account',
+                style: Txt.small.copyWith(color: AppColors.textFaint),
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
         const Center(child: BrandWordmark(size: 18)),
         const SizedBox(height: 4),
         Center(
@@ -338,6 +364,51 @@ class AccountScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Asks first, then deletes the account on the server and the phone.
+  Future<void> _deleteAccount(BuildContext context, Shop shop) async {
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.void2,
+        title: const Text('Delete your account?'),
+        content: Text(
+          shop.hasAccount
+              ? 'Your account, cart, wishlist and order history will be '
+                    'deleted from FeriWala for good. This cannot be undone.'
+              : 'Your profile, cart, wishlist and orders will be removed '
+                    'from this phone. This cannot be undone.',
+          style: const TextStyle(color: AppColors.textDim),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Keep it'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: AppColors.rose),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (sure != true || !context.mounted) return;
+    try {
+      await shop.deleteAccount();
+    } on ApiException catch (e) {
+      if (context.mounted) toast(context, e.message, icon: Iconsax.warning_2);
+      return;
+    }
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AuthScreen()),
+      (_) => false,
+    );
+    toast(context, 'Your account has been deleted');
   }
 
   void _vouchers(BuildContext context) => showGlassSheet(
@@ -426,7 +497,7 @@ class AccountScreen extends StatelessWidget {
           ),
         const SizedBox(height: 8),
         Text(
-          'Email ${Brand.supportEmail} · Hotline ${Brand.supportPhone}',
+          'Email ${Brand.supportEmail}',
           style: Txt.small.copyWith(color: AppColors.violetLight),
         ),
       ],

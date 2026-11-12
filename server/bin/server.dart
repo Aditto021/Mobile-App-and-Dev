@@ -4,6 +4,9 @@
 ///   dart run bin/server.dart [--port 8090] [--host 0.0.0.0]
 ///                            [--data data/db.json]
 ///                            [--catalogue ../assets/data/products.json]
+///
+/// PORT, DATA_PATH and CATALOGUE_PATH environment variables work too (for
+/// hosting; see server/Dockerfile).
 library;
 
 import 'dart:io';
@@ -25,9 +28,12 @@ Future<void> main(List<String> args) async {
       int.tryParse(option('port') ?? Platform.environment['PORT'] ?? '') ??
       8090;
   final host = option('host') ?? '0.0.0.0';
-  final dataPath = option('data') ?? '$root${sep}data${sep}db.json';
+  final env = Platform.environment;
+  final dataPath =
+      option('data') ?? env['DATA_PATH'] ?? '$root${sep}data${sep}db.json';
   final cataloguePath =
       option('catalogue') ??
+      env['CATALOGUE_PATH'] ??
       '$root$sep..${sep}assets${sep}data${sep}products.json';
 
   final catalogue = await Catalogue.load(cataloguePath);
@@ -45,10 +51,13 @@ Future<void> main(List<String> args) async {
     '  ·  data: $dataPath',
   );
 
-  // Ctrl+C: finish writing, then stop.
-  ProcessSignal.sigint.watch().first.then((_) async {
+  // Ctrl+C, or the host stopping the container: finish writing, then stop.
+  Future<void> stop(ProcessSignal _) async {
     await http.close();
     await store.save();
     exit(0);
-  });
+  }
+
+  ProcessSignal.sigint.watch().first.then(stop);
+  if (!Platform.isWindows) ProcessSignal.sigterm.watch().first.then(stop);
 }

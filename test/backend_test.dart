@@ -179,6 +179,24 @@ void main() {
     },
   );
 
+  test(
+    'deleting the account removes it from the server and the phone',
+    () async {
+      final shop = await device();
+      await shop.register('Rahim Uddin', 'rahim@example.com', password);
+      shop.addToCart(shop.products.first);
+      await shop.checkout('bKash');
+      await shop.deleteAccount();
+      expect(shop.hasAccount, isFalse);
+      expect(shop.userName, isNull);
+      expect(shop.orders, isEmpty);
+      await expectLater(
+        shop.login('rahim@example.com', password, offlineName: 'x'),
+        throwsA(isA<ApiException>()),
+      );
+    },
+  );
+
   test('signing out of an account clears its data from the device', () async {
     final shop = await device();
     await shop.register('Rahim Uddin', 'rahim@example.com', password);

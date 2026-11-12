@@ -1,6 +1,7 @@
-/// MODULE: App update service — Checks the online release feed for a newer
-/// APK and shows the download / install dialog (Android only, via a platform
-/// channel).
+/// MODULE: App update service — In the direct-download build only, checks
+/// the online release feed for a newer APK and shows the download / install
+/// dialog (Android, via a platform channel). The Google Play build leaves
+/// updates to Play.
 ///
 /// Contains: AppUpdateInfo, AppUpdates, _UpdateDialog, _UpdateDialogState.
 library;
@@ -34,10 +35,19 @@ class AppUpdateInfo {
 
 class AppUpdates {
   static const channel = MethodChannel('feriwala/updates');
+
+  /// Direct-download build (`--dart-define=SIDELOAD=true`). The Google Play
+  /// build leaves updates to Play and never installs packages itself.
+  static bool sideload = const bool.fromEnvironment('SIDELOAD');
+
   static bool get supported =>
+      sideload && !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  /// The app version, in any build.
+  static bool get canReadVersion =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
   static Future<String> get version async =>
-      supported ? await channel.invokeMethod<String>('version') ?? '' : '';
+      canReadVersion ? await channel.invokeMethod<String>('version') ?? '' : '';
   static Future<AppUpdateInfo> check() async => AppUpdateInfo.fromMap(
     await channel.invokeMapMethod<String, dynamic>('check') ?? {},
   );

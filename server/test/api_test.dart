@@ -190,6 +190,38 @@ void main() {
       expect((await call('GET', '/me')).$1, 401);
     });
 
+    test('deleting an account removes all of its data', () async {
+      final token = await signUp();
+      final id = catalogue.items.first['id'] as int;
+      await call('PUT', '/wishlist/$id', token: token);
+      await call(
+        'POST',
+        '/orders',
+        token: token,
+        body: {
+          'payment': 'bKash',
+          'address': 'House 12, Road 5, Bashundhara R/A, Dhaka',
+          'items': [
+            {'productId': id, 'qty': 1},
+          ],
+        },
+      );
+      expect((await call('DELETE', '/me', token: token)).$1, 204);
+      expect(store.users, isEmpty);
+      expect(store.orders, isEmpty);
+      expect(store.wishlists, isEmpty);
+      expect(store.sessions, isEmpty);
+      expect((await call('GET', '/me', token: token)).$1, 401);
+      final (again, _) = await call(
+        'POST',
+        '/auth/login',
+        body: {'email': 'rahim@example.com', 'password': strong},
+      );
+      expect(again, 401);
+      // The email can sign up again.
+      await signUp();
+    });
+
     test('phone numbers sign in in any common format', () async {
       final (status, _) = await call(
         'POST',

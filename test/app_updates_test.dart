@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  // The updater only exists in the direct-download build.
+  setUp(() => AppUpdates.sideload = true);
+  tearDown(() => AppUpdates.sideload = false);
+
   TestWidgetsFlutterBinding.ensureInitialized();
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

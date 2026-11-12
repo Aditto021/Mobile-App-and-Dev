@@ -55,7 +55,8 @@ class Shop extends ChangeNotifier {
   final List<String> recentSearches = [];
   String? userName;
   String? userEmail;
-  String address = 'House 12, Road 5, Bashundhara R/A, Dhaka 1229';
+  static const _sampleAddress = 'House 12, Road 5, Bashundhara R/A, Dhaka 1229';
+  String address = _sampleAddress;
   String? couponCode;
   bool onboarded = false;
   bool ready = false;
@@ -562,6 +563,30 @@ class Shop extends ChangeNotifier {
     userEmail = null;
     _prefs?.remove('userName');
     _prefs?.remove('userEmail');
+    notifyListeners();
+  }
+
+  /// Deletes the account: on the server (when signed in to one — a
+  /// failure throws an [ApiException] and nothing is removed), then every
+  /// trace of it on this device.
+  Future<void> deleteAccount() async {
+    final api = this.api;
+    if (api != null && _token != null) await api.deleteAccount();
+    _pushTimer?.cancel();
+    _pushTimer = null;
+    _token = null;
+    api?.token = null;
+    _cart.clear();
+    wishlist.clear();
+    orders.clear();
+    recentSearches.clear();
+    couponCode = null;
+    userName = null;
+    userEmail = null;
+    address = _sampleAddress;
+    _prefs?.remove('userName');
+    _prefs?.remove('userEmail');
+    _save();
     notifyListeners();
   }
 

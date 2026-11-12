@@ -37,7 +37,13 @@ class Brand {
   static const freeDeliveryOver = 2000;
   static const deliveryFee = 60;
 
+  /// Support inbox — shown in the app, the privacy policy and on Google
+  /// Play. Must be an address the team reads.
   static const supportEmail = 'support@feriwala.com';
-  static const supportPhone = '16xxx';
+
+  /// Public pages (GitHub Pages, from docs/ in the repository).
+  static const website = 'https://aditto021.github.io/Mobile-App-and-Dev';
+  static const privacyPolicyUrl = '$website/privacy-policy.html';
+  static const deleteAccountUrl = '$website/delete-account.html';
   static const orderPrefix = 'FW';
 }

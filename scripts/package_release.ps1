@@ -16,7 +16,8 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Static analysis failed.' }
         flutter test
         if ($LASTEXITCODE -ne 0) { throw 'Tests failed.' }
-        flutter build apk --release
+        # Direct-download build: original certificate + in-app updater.
+        flutter build apk --release -P sideload=true --dart-define=SIDELOAD=true
         if ($LASTEXITCODE -ne 0) { throw 'Release build failed.' }
     }
     $sdk = if ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } else { $env:ANDROID_HOME }

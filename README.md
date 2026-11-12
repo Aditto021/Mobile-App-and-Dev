@@ -32,13 +32,23 @@ The app finds it at `localhost:8090` (web and desktop) or `10.0.2.2:8090` (Andro
 
 The app stays offline-first: changes show at once and are saved on the device, then a signed-in account sends its cart, voucher and wishlist to the server. Signing in on a new device merges both sides. If the server is down, sign-in and checkout fall back to the device and the account screen shows the sync state.
 
-## Build a signed APK
+## Google Play
 
-Run `flutter build apk --release`, then `./scripts/package_release.ps1 -SkipBuild`.
+The default build is the Google Play build: no self-updater, no install-packages permission, https only, signed with the upload key in `android/key.properties` (kept out of Git; see `store/PLAY_STORE.md`).
+
+```
+./scripts/build_play.ps1 -ApiUrl https://your-api.example.com
+```
+
+It writes a verified `.aab` to `release/play/`. `store/PLAY_STORE.md` has the listing text, Data safety and content-rating answers, screenshots, feature graphic and icon, plus how to host the backend. The privacy policy and account-deletion pages live in `docs/` (GitHub Pages); the app shows the same policy under Account → Privacy policy and deletes accounts under Account → Delete account.
+
+## Build a signed APK (direct download)
+
+Run `flutter build apk --release -P sideload=true --dart-define=SIDELOAD=true`, then `./scripts/package_release.ps1 -SkipBuild` (or let the script build it). Only this build contains the in-app updater.
 
 The packaging script verifies the package identity, version, original signing certificate, and APK alignment. It writes a SHA-256 checksum and update manifest and keeps only the current APK in `release/`. Android 7.0 or later is required. APKs and signing keys are excluded from source control.
 
-Preserve the existing signing keystore. The direct-install app currently uses the original Android debug certificate; this is not a Play Store release. A different signing key cannot update existing installations.
+Preserve the existing signing keystore. The direct-install app currently uses the original Android debug certificate; the Google Play build uses its own upload key instead. A different signing key cannot update existing installations.
 
 ## Publish online updates
 

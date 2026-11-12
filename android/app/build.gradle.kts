@@ -1,7 +1,21 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Two ways to ship the same app:
+//  - Google Play (default): signed with the upload key from
+//    android/key.properties; Play delivers updates.
+//  - Direct download from GitHub Releases (-P sideload=true): keeps the
+//    original certificate and the in-app updater.
+val sideload = providers.gradleProperty("sideload").orNull == "true"
+
+val uploadKey = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
 }
 
 android {
@@ -15,33 +29,55 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.feriwala.app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
-        // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
-        // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
-        // flag during build.
+        // Both come from `version:` in pubspec.yaml (name+code).
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
-    val releaseKeystore = System.getenv("FERIWALA_KEYSTORE_PATH")
-    if (!releaseKeystore.isNullOrBlank()) {
+    sourceSets {
+        getByName("main") {
+            java.srcDir(if (sideload) "src/sideload/kotlin" else "src/store/kotlin")
+            if (sideload) res.srcDir("src/sideload/res")
+        }
+        if (sideload) {
+            getByName("release") { manifest.srcFile("src/sideload/AndroidManifest.xml") }
+        }
+    }
+
+    val sideloadKeystore = System.getenv("FERIWALA_KEYSTORE_PATH")
+    if (sideload && !sideloadKeystore.isNullOrBlank()) {
         signingConfigs.create("distribution") {
-            storeFile = file(releaseKeystore)
+            storeFile = file(sideloadKeystore)
             storePassword = System.getenv("FERIWALA_STORE_PASSWORD")?.takeIf { it.isNotBlank() } ?: "android"
             keyAlias = System.getenv("FERIWALA_KEY_ALIAS")?.takeIf { it.isNotBlank() } ?: "androiddebugkey"
             keyPassword = System.getenv("FERIWALA_KEY_PASSWORD")?.takeIf { it.isNotBlank() } ?: "android"
         }
     }
+    val hasUploadKey = uploadKey.getProperty("storeFile") != null
+    if (!sideload && hasUploadKey) {
+        signingConfigs.create("upload") {
+            storeFile = file(uploadKey.getProperty("storeFile"))
+            storePassword = uploadKey.getProperty("storePassword")
+            keyAlias = uploadKey.getProperty("keyAlias")
+            keyPassword = uploadKey.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
-            // CI receives the same existing key through an encrypted secret.
-            signingConfig = signingConfigs.getByName(if (releaseKeystore.isNullOrBlank()) "debug" else "distribution")
+            signingConfig = signingConfigs.getByName(
+                when {
+                    sideload && !sideloadKeystore.isNullOrBlank() -> "distribution"
+                    !sideload && hasUploadKey -> "upload"
+                    else -> "debug"
+                }
+            )
+            if (!sideload && !hasUploadKey) {
+                logger.warn("WARNING: android/key.properties is missing — this release is debug-signed and Google Play will refuse it.")
+            }
         }
     }
 }

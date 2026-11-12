@@ -9,7 +9,10 @@ import 'package:flutter/foundation.dart';
 
 /// Where the server lives. Set it at build time:
 ///   flutter run --dart-define=API_URL=http://192.168.0.10:8090
-/// `API_URL=off` runs the app with no server at all.
+///   flutter build appbundle --dart-define=API_URL=https://api.example.com
+/// `API_URL=off` runs the app with no server at all. A release phone build
+/// with no API_URL also runs without a server (there is no "localhost" on a
+/// shopper's phone), and release builds only allow https.
 abstract final class ApiConfig {
   static const _fromBuild = String.fromEnvironment('API_URL');
   static const port = 8090;
@@ -18,6 +21,7 @@ abstract final class ApiConfig {
   static String? get baseUrl {
     if (_fromBuild == 'off') return null;
     if (_fromBuild.isNotEmpty) return _fromBuild;
+    if (kReleaseMode && !kIsWeb) return null;
     if (kIsWeb) {
       // Same machine that serves the web app.
       final host = Uri.base.host.isEmpty ? 'localhost' : Uri.base.host;

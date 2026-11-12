@@ -75,6 +75,9 @@ class ShopApi {
   Future<ApiUser> updateMe({String? name, String? address}) async =>
       _user(await client.patch('/me', {'name': ?name, 'address': ?address}));
 
+  /// Deletes the signed-in account and all its data on the server.
+  Future<void> deleteAccount() => client.delete('/me');
+
   // ---- Cart & wishlist ----
 
   static RemoteCart _cart(dynamic j) => (

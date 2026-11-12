@@ -65,6 +65,7 @@ class ShopServer {
     r.post('/auth/logout', _logout);
     r.get('/me', (Request q) => jsonOk(_user(q).toPublicJson()));
     r.patch('/me', _updateMe);
+    r.delete('/me', _deleteMe);
 
     // Cart.
     r.get('/cart', (Request q) => jsonOk(_cartJson(_cartOf(_user(q)))));
@@ -348,6 +349,20 @@ class ShopServer {
     }
     await store.save();
     return jsonOk(user.toPublicJson());
+  }
+
+  /// Deletes the account and everything kept for it: sessions, cart,
+  /// wishlist and order history.
+  Future<Response> _deleteMe(Request q) async {
+    final user = _user(q);
+    store.users.remove(user.login);
+    store.sessions.removeWhere((_, s) => s.userId == user.id);
+    store.carts.remove(user.id);
+    store.wishlists.remove(user.id);
+    store.orders.removeWhere((o) => o['userId'] == user.id);
+    _failures.remove(user.login);
+    await store.save();
+    return Response(204);
   }
 
   // ------------------------------------------------------------------ cart
