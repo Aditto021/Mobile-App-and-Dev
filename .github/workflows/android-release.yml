@@ -66,6 +66,11 @@ jobs:
           $note = (($env:COMMIT_MESSAGE -split "`n")[0]).Trim()
           if ($note.Length -gt 300) { $note = $note.Substring(0, 300) }
           if ($note) { "RELEASE_NOTES=$note" >> $env:GITHUB_ENV }
+      - name: Create the temp folder Gradle uses
+        if: env.SKIP_RELEASE != 'true'
+        shell: pwsh
+        # android/gradle.properties points Java's temp files at D:\tmp.
+        run: New-Item -ItemType Directory -Force 'D:\tmp' | Out-Null
       - name: Build, test, verify, and publish
         if: env.SKIP_RELEASE != 'true'
         shell: pwsh
