@@ -1,9 +1,10 @@
 /// MODULE: App theme — Design tokens: colour palette, Poppins/Hind Siliguri
-/// text styles, the dark Material theme and the nebula page transition.
+/// text styles, the dark Material theme and the 3D page transition.
 ///
-/// Contains: AppColors, AppTheme, _NebulaTransitions, Txt.
+/// Contains: AppColors, AppTheme, _SwipeEverywhere, _NebulaTransitions, Txt.
 library;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -58,6 +59,44 @@ class AppColors {
 class AppTheme {
   static const fontFamily = 'Poppins';
   static const fallback = ['HindSiliguri'];
+
+  /// Lets swipeable views (carousels, galleries, shelves) be dragged with a
+  /// mouse too, so the web version swipes like the phone app.
+  static const scrollBehavior = _SwipeEverywhere();
+
+  /// The "push back" half of the 3D page transition: while a new screen
+  /// opens on top, this one sinks back and fades. Every route uses it, even
+  /// ones with their own entrance (such as the splash → shell route).
+  static Widget recede(
+    BuildContext context,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (MediaQuery.disableAnimationsOf(context) ||
+        MediaQuery.accessibleNavigationOf(context)) {
+      return child;
+    }
+    final back = CurvedAnimation(
+      parent: secondaryAnimation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    return FadeTransition(
+      // Screens are transparent over the nebula, so the one underneath
+      // fades as it recedes instead of showing through.
+      opacity: Tween<double>(begin: 1, end: 0.12).animate(back),
+      child: AnimatedBuilder(
+        animation: back,
+        child: child,
+        builder: (context, child) => Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..scaleByDouble(1 - back.value * 0.07, 1 - back.value * 0.07, 1, 1),
+          child: child,
+        ),
+      ),
+    );
+  }
 
   static ThemeData get dark {
     const scheme = ColorScheme.dark(
@@ -179,9 +218,26 @@ class AppTheme {
   }
 }
 
-/// A short fade and gentle vertical transition, respecting reduced motion.
+class _SwipeEverywhere extends MaterialScrollBehavior {
+  const _SwipeEverywhere();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.invertedStylus,
+    PointerDeviceKind.trackpad,
+  };
+}
+
+/// 3D depth transition: the new screen swings forward out of the nebula
+/// while the old one recedes behind it. Respects reduced motion.
 class _NebulaTransitions extends PageTransitionsBuilder {
   const _NebulaTransitions();
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 460);
 
   @override
   Widget buildTransitions<T>(
@@ -195,19 +251,32 @@ class _NebulaTransitions extends PageTransitionsBuilder {
         MediaQuery.accessibleNavigationOf(context)) {
       return child;
     }
-    final curve = CurvedAnimation(
+    final enter = CurvedAnimation(
       parent: animation,
       curve: Curves.easeOutCubic,
       reverseCurve: Curves.easeInCubic,
     );
     return FadeTransition(
-      opacity: curve,
-      child: SlideTransition(
-        position: Tween(
-          begin: const Offset(0, 0.025),
-          end: Offset.zero,
-        ).animate(curve),
-        child: child,
+      opacity: enter,
+      child: AnimatedBuilder(
+        animation: enter,
+        child: AppTheme.recede(context, secondaryAnimation, child),
+        builder: (context, child) {
+          final rise = 1 - enter.value;
+          // Settled screens get a plain identity transform, so they add no
+          // perspective to the 3D effects inside them.
+          return Transform(
+            alignment: Alignment.center,
+            transform: rise == 0
+                ? Matrix4.identity()
+                : (Matrix4.identity()
+                    ..setEntry(3, 2, 0.0012)
+                    ..translateByDouble(0, rise * 36, 0, 1)
+                    ..rotateX(rise * 0.14)
+                    ..scaleByDouble(1 - rise * 0.05, 1 - rise * 0.05, 1, 1)),
+            child: child,
+          );
+        },
       ),
     );
   }

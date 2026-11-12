@@ -1,5 +1,6 @@
 /// MODULE: Entry point — sets up the phone status bar and orientation,
-/// creates the app state (Shop) and starts the app.
+/// creates the app state (Shop, linked to the server named by API_URL) and
+/// starts the app.
 library;
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import 'app.dart';
 import 'core/services/display_performance_service.dart';
+import 'data/api/shop_api.dart';
 import 'data/state/shop_state.dart';
 
 void main() {
@@ -27,7 +29,7 @@ void main() {
   );
   runApp(
     ChangeNotifierProvider(
-      create: (_) => Shop()..load(),
+      create: (_) => Shop(api: ShopApi.fromConfig())..load(),
       child: const ShopApp(),
     ),
   );

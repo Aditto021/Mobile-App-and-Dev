@@ -18,7 +18,10 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="feriWala — premium e-commerce">
+  <meta name="theme-color" content="#090812">
+  <meta name="color-scheme" content="dark">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -31,8 +34,80 @@
 
   <title>feriWala</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Dark branded loading screen, so the page never flashes white while
+       the app downloads. Removed when Flutter draws its first frame. -->
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #090812;
+    }
+    #loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      background:
+        radial-gradient(60% 45% at 50% 40%, rgba(121, 85, 199, 0.28), transparent 70%),
+        radial-gradient(40% 30% at 70% 75%, rgba(177, 111, 173, 0.14), transparent 70%),
+        #090812;
+      transition: opacity 0.5s ease;
+      z-index: 10;
+    }
+    #loader.done { opacity: 0; pointer-events: none; }
+    #loader img {
+      width: 96px;
+      height: 96px;
+      border-radius: 28px;
+      box-shadow: 0 0 60px rgba(121, 85, 199, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      animation: breathe 2.4s ease-in-out infinite;
+    }
+    #loader .bar {
+      width: 132px;
+      height: 3px;
+      border-radius: 3px;
+      overflow: hidden;
+      background: rgba(221, 214, 254, 0.12);
+    }
+    #loader .bar::after {
+      content: "";
+      display: block;
+      width: 40%;
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #7955c7, #f3c98b);
+      animation: slide 1.3s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes slide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #loader img, #loader .bar::after { animation: none; }
+    }
+  </style>
 </head>
 <body>
+  <div id="loader" role="progressbar" aria-busy="true">
+    <img src="icons/Icon-192.png" alt="">
+    <div class="bar"></div>
+  </div>
+  <script>
+    document.getElementById('loader').setAttribute('aria-label', 'Loading ' + document.title);
+    window.addEventListener('flutter-first-frame', function () {
+      var loader = document.getElementById('loader');
+      loader.classList.add('done');
+      setTimeout(function () { loader.remove(); }, 600);
+    });
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

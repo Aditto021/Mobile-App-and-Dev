@@ -16,6 +16,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/models.dart';
 import '../../shared/widgets/glass_widgets.dart';
+import '../../shared/widgets/motion_3d.dart';
 import '../orders/orders_screen.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
@@ -75,12 +76,23 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
               child: Column(
                 children: [
                   const Spacer(),
+                  // The badge flips in like a coin, then the tick draws.
                   AnimatedBuilder(
                     animation: _check,
-                    builder: (_, _) => CustomPaint(
-                      size: const Size.square(170),
-                      painter: _CheckPainter(_check.value),
-                    ),
+                    builder: (_, _) {
+                      final flip = Curves.easeOutBack.transform(
+                        (_check.value / 0.55).clamp(0.0, 1.0),
+                      );
+                      return Transform(
+                        alignment: Alignment.center,
+                        transform: Perspective.camera()
+                          ..rotateY((1 - flip) * math.pi),
+                        child: CustomPaint(
+                          size: const Size.square(170),
+                          painter: _CheckPainter(_check.value),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 26),
                   GradientText(

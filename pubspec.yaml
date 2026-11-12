@@ -20,6 +20,7 @@ dependencies:
   flutter_staggered_grid_view: ^0.7.0
   iconsax_flutter: ^1.0.1
   flutter_displaymode: ^0.7.0
+  dio: ^5.9.0
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +28,10 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.8
+  # The backend, so tests can run the real API in-process.
+  feriwala_server:
+    path: server
+  shelf: ^1.4.2
 
 flutter:
   uses-material-design: true

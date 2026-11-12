@@ -5,6 +5,8 @@
 /// _DeliveryCard, _ReviewTile.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -20,6 +22,7 @@ import '../../data/state/shop_state.dart';
 import '../../shared/widgets/common_widgets.dart';
 import '../../shared/widgets/fly_to_cart.dart';
 import '../../shared/widgets/glass_widgets.dart';
+import '../../shared/widgets/motion_3d.dart';
 import '../../shared/widgets/product_widgets.dart';
 import '../cart/cart_screen.dart';
 import '../checkout/checkout_screen.dart';
@@ -127,12 +130,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           PageView.builder(
                             controller: _pc,
                             itemCount: p.images.length,
-                            itemBuilder: (_, i) {
+                            itemBuilder: (context, i) {
                               final img = ProductImage(
                                 p.images[i],
                                 padding: 30,
                               );
-                              return i == 0
+                              final page = i == 0
                                   ? Hero(
                                       tag: widget.heroTag,
                                       child: KeyedSubtree(
@@ -141,6 +144,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       ),
                                     )
                                   : img;
+                              if (Perspective.reduced(context)) return page;
+                              // 3D cube: each photo turns on its edge as you
+                              // swipe to the next one.
+                              return AnimatedBuilder(
+                                animation: _pc,
+                                child: page,
+                                builder: (context, child) {
+                                  final current =
+                                      _pc.hasClients &&
+                                          _pc.position.haveDimensions
+                                      ? _pc.page ?? 0
+                                      : 0.0;
+                                  final delta = (i - current).clamp(-1.0, 1.0);
+                                  return Transform(
+                                    alignment: delta > 0
+                                        ? Alignment.centerLeft
+                                        : Alignment.centerRight,
+                                    transform: delta.abs() < 0.001
+                                        ? Matrix4.identity()
+                                        : (Perspective.camera()..rotateY(
+                                            delta * math.pi / 2 * 0.8,
+                                          )),
+                                    child: child,
+                                  );
+                                },
+                              );
                             },
                           ),
                           if (p.images.length > 1)
@@ -171,241 +200,250 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
               SliverToBoxAdapter(
-                child:
-                    Glass(
-                          blur: 24,
-                          opacity: 0.08,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(34),
+                child: Glass(
+                  blur: 24,
+                  opacity: 0.08,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(34),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(22, 24, 22, 150),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          _Pill(
+                            icon: cat.icon,
+                            label: cat.name,
+                            color: cat.color,
                           ),
-                          padding: const EdgeInsets.fromLTRB(22, 24, 22, 150),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  _Pill(
-                                    icon: cat.icon,
-                                    label: cat.name,
-                                    color: cat.color,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _Pill(
-                                    icon: Iconsax.verify,
-                                    label: p.brand,
-                                    color: AppColors.mint,
-                                  ),
-                                  const Spacer(),
-                                  if (p.discount > 0) DiscountChip(p.discount),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                p.title,
-                                style: Txt.h1.copyWith(fontSize: 24),
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  ...List.generate(
-                                    5,
-                                    (i) =>
-                                        Icon(
-                                          i < p.rating.round()
-                                              ? Icons.star_rounded
-                                              : Icons.star_outline_rounded,
-                                          size: 18,
-                                          color: AppColors.gold,
-                                        ).animate().scale(
-                                          delay: (300 + i * 70).ms,
-                                          curve: Curves.elasticOut,
-                                          duration: 700.ms,
-                                        ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      '${p.rating.toStringAsFixed(1)}  ·  ${p.reviews.length} reviews  ·  ${p.sold} sold',
-                                      style: Txt.small.copyWith(
-                                        color: AppColors.textDim,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 18),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Expanded(child: PriceTag(p, size: 28)),
-                                  QtyStepper(
-                                    qty: _qty,
-                                    onChanged: (v) =>
-                                        setState(() => _qty = v.clamp(1, 20)),
-                                    size: 36,
-                                  ),
-                                ],
-                              ),
-                              if (p.discount > 0)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(
-                                    'You save ${taka(p.originalPrice - p.price)}',
-                                    style: Txt.small.copyWith(
-                                      color: AppColors.mint,
-                                    ),
-                                  ),
+                          const SizedBox(width: 8),
+                          _Pill(
+                            icon: Iconsax.verify,
+                            label: p.brand,
+                            color: AppColors.mint,
+                          ),
+                          const Spacer(),
+                          if (p.discount > 0) DiscountChip(p.discount),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(p.title, style: Txt.h1.copyWith(fontSize: 24)),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          ...List.generate(
+                            5,
+                            (i) =>
+                                Icon(
+                                  i < p.rating.round()
+                                      ? Icons.star_rounded
+                                      : Icons.star_outline_rounded,
+                                  size: 18,
+                                  color: AppColors.gold,
+                                ).animate().scale(
+                                  delay: (300 + i * 70).ms,
+                                  curve: Curves.elasticOut,
+                                  duration: 700.ms,
                                 ),
-                              const SizedBox(height: 22),
-                              Text('Colour', style: Txt.h3),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  for (var i = 0; i < _swatches.length; i++)
-                                    Pressable(
-                                      onTap: () => setState(() => _variant = i),
-                                      child: AnimatedContainer(
-                                        duration: const Duration(
-                                          milliseconds: 300,
-                                        ),
-                                        curve: Curves.easeOutBack,
-                                        margin: const EdgeInsets.only(
-                                          right: 12,
-                                        ),
-                                        width: 38,
-                                        height: 38,
-                                        padding: EdgeInsets.all(
-                                          i == _variant ? 4 : 0,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: i == _variant
-                                                ? Colors.white
-                                                : Colors.white24,
-                                            width: i == _variant ? 2 : 1,
-                                          ),
-                                          boxShadow: i == _variant
-                                              ? [
-                                                  BoxShadow(
-                                                    color: _swatches[i]
-                                                        .withValues(alpha: 0.7),
-                                                    blurRadius: 14,
-                                                  ),
-                                                ]
-                                              : null,
-                                        ),
-                                        child: DecoratedBox(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: _swatches[i],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              '${p.rating.toStringAsFixed(1)}  ·  ${compact(p.ratings)} ratings  ·  ${compact(p.sold)} sold',
+                              style: Txt.small.copyWith(
+                                color: AppColors.textDim,
                               ),
-                              const SizedBox(height: 22),
-                              _DeliveryCard(stock: p.stock),
-                              const SizedBox(height: 22),
-                              Text('About this item', style: Txt.h3),
-                              const SizedBox(height: 8),
-                              AnimatedSize(
-                                duration: const Duration(milliseconds: 400),
-                                curve: Curves.easeOutCubic,
-                                alignment: Alignment.topCenter,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (p.seller.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Iconsax.shop,
+                                size: 15,
+                                color: AppColors.violetLight,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
                                 child: Text(
-                                  p.description,
-                                  maxLines: _expanded ? null : 3,
-                                  overflow: _expanded
-                                      ? null
-                                      : TextOverflow.ellipsis,
-                                  style: Txt.body.copyWith(
+                                  p.location.isEmpty
+                                      ? 'Sold by ${p.seller}'
+                                      : 'Sold by ${p.seller}  ·  ${p.location}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Txt.small.copyWith(
                                     color: AppColors.textDim,
                                   ),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () =>
-                                    setState(() => _expanded = !_expanded),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(
-                                    _expanded ? 'Show less' : 'Read more',
-                                    style: const TextStyle(
-                                      color: AppColors.violetLight,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Row(
-                                children: [
-                                  Text('Reviews', style: Txt.h3),
-                                  const Spacer(),
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    color: AppColors.gold,
-                                    size: 18,
-                                  ),
-                                  Text(
-                                    ' ${p.rating.toStringAsFixed(1)} / 5',
-                                    style: Txt.small,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              for (final (i, r) in p.reviews.indexed)
-                                _ReviewTile(r).entrance(i),
-                              if (similar.isNotEmpty) ...[
-                                const SizedBox(height: 22),
-                                Text('You may also like', style: Txt.h3),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  height:
-                                      330 +
-                                      ((MediaQuery.textScalerOf(context)
-                                                      .scale(1) -
-                                                  1) *
-                                              150)
-                                          .clamp(0, 180),
-                                  child: ListView.separated(
-                                    clipBehavior: Clip.none,
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: similar.length,
-                                    separatorBuilder: (_, _) =>
-                                        const SizedBox(width: 12),
-                                    itemBuilder: (context, i) => SizedBox(
-                                      width: 165,
-                                      child: ProductCard(
-                                        product: similar[i],
-                                        heroPrefix: 'sim${p.id}',
-                                        onTap: () => Navigator.of(context)
-                                            .pushReplacement(
-                                              MaterialPageRoute(
-                                                builder: (_) => ProductDetailScreen(
-                                                  product: similar[i],
-                                                  heroTag:
-                                                      'sim${p.id}-${similar[i].id}',
-                                                ),
-                                              ),
-                                            ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
-                        )
-                        .animate()
-                        .slideY(
-                          begin: 0.25,
-                          duration: 650.ms,
-                          curve: Curves.easeOutCubic,
-                        )
-                        .fadeIn(),
+                        ),
+                      const SizedBox(height: 18),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(child: PriceTag(p, size: 28)),
+                          QtyStepper(
+                            qty: _qty,
+                            onChanged: (v) =>
+                                setState(() => _qty = v.clamp(1, 20)),
+                            size: 36,
+                          ),
+                        ],
+                      ),
+                      if (p.discount > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            'You save ${taka(p.originalPrice - p.price)}',
+                            style: Txt.small.copyWith(color: AppColors.mint),
+                          ),
+                        ),
+                      const SizedBox(height: 22),
+                      Text('Colour', style: Txt.h3),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          for (var i = 0; i < _swatches.length; i++)
+                            Pressable(
+                              onTap: () => setState(() => _variant = i),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOutBack,
+                                margin: const EdgeInsets.only(right: 12),
+                                width: 38,
+                                height: 38,
+                                padding: EdgeInsets.all(i == _variant ? 4 : 0),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: i == _variant
+                                        ? Colors.white
+                                        : Colors.white24,
+                                    width: i == _variant ? 2 : 1,
+                                  ),
+                                  boxShadow: i == _variant
+                                      ? [
+                                          BoxShadow(
+                                            color: _swatches[i].withValues(
+                                              alpha: 0.7,
+                                            ),
+                                            blurRadius: 14,
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _swatches[i],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 22),
+                      _DeliveryCard(stock: p.stock),
+                      const SizedBox(height: 22),
+                      Text('About this item', style: Txt.h3),
+                      const SizedBox(height: 8),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeOutCubic,
+                        alignment: Alignment.topCenter,
+                        child: Text(
+                          p.description,
+                          maxLines: _expanded ? null : 3,
+                          overflow: _expanded ? null : TextOverflow.ellipsis,
+                          style: Txt.body.copyWith(color: AppColors.textDim),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() => _expanded = !_expanded),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            _expanded ? 'Show less' : 'Read more',
+                            style: const TextStyle(
+                              color: AppColors.violetLight,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Text('Reviews', style: Txt.h3),
+                          const Spacer(),
+                          const Icon(
+                            Icons.star_rounded,
+                            color: AppColors.gold,
+                            size: 18,
+                          ),
+                          Text(
+                            ' ${p.rating.toStringAsFixed(1)} / 5',
+                            style: Txt.small,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      for (final (i, r) in p.reviews.indexed)
+                        _ReviewTile(r).entrance(i),
+                      if (p.reviews.isEmpty)
+                        Text(
+                          p.ratings > 0
+                              ? '${compact(p.ratings)} buyers rated this '
+                                    '${p.rating.toStringAsFixed(1)} out of 5.'
+                              : 'No ratings yet — be the first to review it.',
+                          style: Txt.small.copyWith(color: AppColors.textDim),
+                        ),
+                      if (similar.isNotEmpty) ...[
+                        const SizedBox(height: 22),
+                        Text('You may also like', style: Txt.h3),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height:
+                              330 +
+                              ((MediaQuery.textScalerOf(context).scale(1) - 1) *
+                                      150)
+                                  .clamp(0, 180),
+                          child: ListView.separated(
+                            clipBehavior: Clip.none,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: similar.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 12),
+                            itemBuilder: (context, i) => SizedBox(
+                              width: 165,
+                              child: ProductCard(
+                                product: similar[i],
+                                heroPrefix: 'sim${p.id}',
+                                onTap: () => Navigator.of(context)
+                                    .pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (_) => ProductDetailScreen(
+                                          product: similar[i],
+                                          heroTag:
+                                              'sim${p.id}-${similar[i].id}',
+                                        ),
+                                      ),
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ).animate().slideY(begin: 0.25, duration: 650.ms, curve: Curves.easeOutCubic).fadeIn(),
               ),
             ],
           ),

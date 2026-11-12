@@ -96,8 +96,11 @@ class _SplashScreenState extends State<SplashScreen>
             ? Duration.zero
             : const Duration(milliseconds: 350),
         pageBuilder: (_, _, _) => page,
-        transitionsBuilder: (_, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            FadeTransition(
+              opacity: animation,
+              child: AppTheme.recede(context, secondaryAnimation, child),
+            ),
       ),
     );
   }

@@ -11,8 +11,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/validators.dart';
+import '../../data/api/api_client.dart';
 import '../../data/state/shop_state.dart';
 import '../../shared/widgets/brand_logo.dart';
+import '../../shared/widgets/common_widgets.dart';
 import '../../shared/widgets/glass_widgets.dart';
 import '../../shared/widgets/product_widgets.dart';
 import '../shell/main_shell.dart';
@@ -28,6 +30,9 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _signUp = false;
   bool _obscure = true;
   bool _loading = false;
+
+  /// What the server said when sign-in failed.
+  String? _error;
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _email = TextEditingController();
@@ -45,22 +50,49 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _enter(String name, String email) {
     context.read<Shop>().signIn(name, email);
+    _goHome();
+  }
+
+  void _goHome() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const Shell()),
       (_) => false,
     );
   }
 
+  /// Signs in (or signs up) with the server; its reply decides.
   Future<void> _submit() async {
     if (!_form.currentState!.validate()) return;
-    setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 1100));
-    if (!mounted) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final shop = context.read<Shop>();
     final email = _email.text.trim();
-    final name = _signUp && _name.text.trim().isNotEmpty
-        ? _name.text.trim()
-        : _nameFromEmail(email);
-    _enter(name, email);
+    try {
+      final result = _signUp
+          ? await shop.register(_name.text.trim(), email, _pass.text)
+          : await shop.login(
+              email,
+              _pass.text,
+              offlineName: _nameFromEmail(email),
+            );
+      if (!mounted) return;
+      if (result == AuthResult.offline) {
+        toast(
+          context,
+          'Server offline — signed in on this device only',
+          icon: Iconsax.cloud_cross,
+        );
+      }
+      _goHome();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.message;
+      });
+    }
   }
 
   String _nameFromEmail(String e) {
@@ -98,7 +130,10 @@ class _AuthScreenState extends State<AuthScreen> {
                           children: [
                             _Toggle(
                               signUp: _signUp,
-                              onChanged: (v) => setState(() => _signUp = v),
+                              onChanged: (v) => setState(() {
+                                _signUp = v;
+                                _error = null;
+                              }),
                             ),
                             const SizedBox(height: 22),
                             AnimatedSwitcher(
@@ -218,6 +253,28 @@ class _AuthScreenState extends State<AuthScreen> {
                               )
                             else
                               const SizedBox(height: 18),
+                            if (_error != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Iconsax.warning_2,
+                                      size: 16,
+                                      color: AppColors.rose,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _error!,
+                                        style: Txt.small.copyWith(
+                                          color: AppColors.rose,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ).animate().fadeIn().shakeX(hz: 4, amount: 4),
                             AnimatedSwitcher(
                               duration: const Duration(milliseconds: 300),
                               child: _loading

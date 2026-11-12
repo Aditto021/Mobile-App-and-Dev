@@ -226,12 +226,31 @@ class Pressable extends StatefulWidget {
 
 class _PressableState extends State<Pressable> {
   bool _down = false;
+  bool _hover = false;
 
   @override
   Widget build(BuildContext context) {
     final reduceMotion =
         MediaQuery.disableAnimationsOf(context) ||
         MediaQuery.accessibleNavigationOf(context);
+    final enabled = widget.onTap != null;
+    // With a mouse (web/desktop): hand cursor and a gentle lift on hover.
+    final scale = reduceMotion
+        ? 1.0
+        : _down
+        ? widget.scale.clamp(0.96, 1.0)
+        : _hover && enabled
+        ? 1.02
+        : 1.0;
+    return MouseRegion(
+      cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
+      onEnter: enabled ? (_) => setState(() => _hover = true) : null,
+      onExit: enabled ? (_) => setState(() => _hover = false) : null,
+      child: _gestures(scale, reduceMotion),
+    );
+  }
+
+  Widget _gestures(double scale, bool reduceMotion) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapDown: widget.onTap == null
@@ -246,9 +265,9 @@ class _PressableState extends State<Pressable> {
               widget.onTap!();
             },
       child: AnimatedScale(
-        scale: _down && !reduceMotion ? widget.scale.clamp(0.96, 1.0) : 1,
+        scale: scale,
         duration: Duration(
-          milliseconds: reduceMotion ? 0 : (_down ? 100 : 180),
+          milliseconds: reduceMotion ? 0 : (_down ? 100 : 220),
         ),
         curve: Curves.easeOutCubic,
         child: widget.child,

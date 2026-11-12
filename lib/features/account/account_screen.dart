@@ -1,7 +1,7 @@
 /// MODULE: Account screen — Profile, order/wishlist stats, vouchers,
 /// settings, help, app updates and sign out.
 ///
-/// Contains: AccountScreen, _Stat.
+/// Contains: AccountScreen, _SyncStatus, _Stat.
 library;
 
 import 'package:flutter/material.dart';
@@ -17,6 +17,7 @@ import '../../data/state/shop_state.dart';
 import '../../shared/widgets/brand_logo.dart';
 import '../../shared/widgets/common_widgets.dart';
 import '../../shared/widgets/glass_widgets.dart';
+import '../../shared/widgets/motion_3d.dart';
 import '../../shared/widgets/product_widgets.dart';
 import '../../shared/widgets/space_background.dart';
 import '../auth/auth_screen.dart';
@@ -80,99 +81,106 @@ class AccountScreen extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.fromLTRB(16, top + 16, 16, 120),
       children: [
-        // Profile card
-        Glass(
+        // Profile card: tilts in 3D with a glare that follows the pointer.
+        Tilt3D(
           radius: 30,
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 76,
-                    height: 76,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: SweepGradient(
-                        colors: [
-                          AppColors.violet,
-                          AppColors.magenta,
-                          AppColors.cyan,
-                          AppColors.violet,
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 68,
-                    height: 68,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.void2,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      name[0].toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.lavender,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: Glass(
+            radius: 30,
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Text(
-                      name,
-                      style: Txt.h2,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if ((shop.userEmail ?? '').isNotEmpty)
-                      Text(
-                        shop.userEmail!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Txt.small.copyWith(color: AppColors.textDim),
-                      ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF3C98B), Color(0xFFE4C7B1)],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Iconsax.crown, size: 13, color: Colors.black),
-                          SizedBox(width: 5),
-                          Text(
-                            'Made for you',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                            ),
+                    // Slowly spinning gradient ring around the avatar.
+                    Spin(
+                      child: Container(
+                        width: 76,
+                        height: 76,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: SweepGradient(
+                            colors: [
+                              AppColors.violet,
+                              AppColors.magenta,
+                              AppColors.cyan,
+                              AppColors.violet,
+                            ],
                           ),
-                        ],
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 68,
+                      height: 68,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.void2,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        name[0].toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.lavender,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: Txt.h2,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if ((shop.userEmail ?? '').isNotEmpty)
+                        Text(
+                          shop.userEmail!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Txt.small.copyWith(color: AppColors.textDim),
+                        ),
+                      _SyncStatus(shop: shop),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFF3C98B), Color(0xFFE4C7B1)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Iconsax.crown, size: 13, color: Colors.black),
+                            SizedBox(width: 5),
+                            Text(
+                              'Made for you',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1),
         const SizedBox(height: 14),
@@ -462,6 +470,44 @@ class AccountScreen extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// One line saying where the account lives: synced with the server,
+/// waiting for it, or on this device only. Tap to sync now.
+class _SyncStatus extends StatelessWidget {
+  final Shop shop;
+  const _SyncStatus({required this.shop});
+
+  @override
+  Widget build(BuildContext context) {
+    if (shop.userName == null) return const SizedBox.shrink();
+    final (icon, text, color) = !shop.hasAccount
+        ? (Iconsax.mobile, 'Saved on this device only', AppColors.textDim)
+        : shop.online
+        ? (Iconsax.cloud_change, 'Synced with your account', AppColors.mint)
+        : (Iconsax.cloud_cross, 'Offline · will sync later', AppColors.gold);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: shop.hasAccount ? shop.refresh : null,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Txt.small.copyWith(fontSize: 11, color: color),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _Stat extends StatelessWidget {

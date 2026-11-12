@@ -1,9 +1,10 @@
 /// MODULE: Checkout screen — Delivery address form, payment method (card /
-/// bKash / Nagad / cash) with validation, and slide-to-pay.
+/// bKash / Nagad / cash) with validation, a live 3D card preview, and
+/// slide-to-pay.
 ///
 /// Contains: _Pay, CheckoutScreen, _CheckoutScreenState, _StepHeader,
 /// _AddressCard, AddressForm, _AddressFormState, _PayTile, _CardForm,
-/// _CardFormatter, SlideToPay, _SlideToPayState.
+/// _CardFormState, _CardFormatter, SlideToPay, _SlideToPayState.
 library;
 
 import 'package:flutter/material.dart';
@@ -15,10 +16,13 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/validators.dart';
+import '../../data/api/api_client.dart';
+import '../../data/models/models.dart';
 import '../../data/state/shop_state.dart';
 import '../../shared/widgets/common_widgets.dart';
 import '../../shared/widgets/glass_widgets.dart';
 import '../../shared/widgets/product_widgets.dart';
+import 'card_preview_3d.dart';
 import 'order_success_screen.dart';
 
 class _Pay {
@@ -101,7 +105,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
     final name = _methods.firstWhere((m) => m.id == _method).name;
-    final order = shop.placeOrder(name);
+    final Order order;
+    try {
+      order = await shop.checkout(name);
+    } on ApiException catch (e) {
+      // e.g. sold out, or not enough stock — the cart stays as it is.
+      if (mounted) toast(context, e.message, icon: Iconsax.warning_2);
+      return;
+    }
+    if (!mounted) return;
     await Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => OrderSuccessScreen(order: order)),
       (r) => r.isFirst,
@@ -550,7 +562,7 @@ class _PayTile extends StatelessWidget {
   }
 }
 
-class _CardForm extends StatelessWidget {
+class _CardForm extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController number, expiry, cvv;
   const _CardForm({
@@ -561,15 +573,43 @@ class _CardForm extends StatelessWidget {
   });
 
   @override
+  State<_CardForm> createState() => _CardFormState();
+}
+
+class _CardFormState extends State<_CardForm> {
+  // The 3D card turns over while the CVV field has focus.
+  final _cvvFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _cvvFocus.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _cvvFocus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Form(
-      key: formKey,
+      key: widget.formKey,
       child: Padding(
         padding: const EdgeInsets.only(top: 4, bottom: 8),
         child: Column(
           children: [
+            CardPreview3D(
+              number: widget.number,
+              expiry: widget.expiry,
+              cvv: widget.cvv,
+              holder: context.read<Shop>().userName ?? 'Card holder',
+              showBack: _cvvFocus.hasFocus,
+            ),
+            const SizedBox(height: 18),
             TextFormField(
-              controller: number,
+              controller: widget.number,
               keyboardType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -587,7 +627,7 @@ class _CardForm extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextFormField(
-                    controller: expiry,
+                    controller: widget.expiry,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(hintText: 'MM/YY'),
                     validator: Validators.expiryValidator,
@@ -596,7 +636,8 @@ class _CardForm extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextFormField(
-                    controller: cvv,
+                    controller: widget.cvv,
+                    focusNode: _cvvFocus,
                     keyboardType: TextInputType.number,
                     obscureText: true,
                     decoration: const InputDecoration(hintText: 'CVV'),
@@ -754,6 +795,14 @@ class _SlideToPayState extends State<SlideToPay>
                       await Future.delayed(const Duration(milliseconds: 500));
                       if (!mounted) return;
                       await widget.onComplete();
+                      // Still here (e.g. the order was refused): reset so
+                      // the shopper can fix it and slide again.
+                      if (mounted) {
+                        setState(() {
+                          _busy = false;
+                          _x = 0;
+                        });
+                      }
                     } else {
                       _from = _x;
                       _back.forward(from: 0);

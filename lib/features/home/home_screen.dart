@@ -20,6 +20,7 @@ import '../../data/state/shop_state.dart';
 import '../../shared/widgets/brand_logo.dart';
 import '../../shared/widgets/common_widgets.dart';
 import '../../shared/widgets/glass_widgets.dart';
+import '../../shared/widgets/motion_3d.dart';
 import '../../shared/widgets/product_widgets.dart';
 import '../../shared/widgets/space_background.dart';
 import '../../shared/widgets/voucher_card.dart';
@@ -288,102 +289,150 @@ class _HeroCarouselState extends State<_HeroCarousel> {
             itemBuilder: (context, i) {
               final banner = _banners[i];
               final items = shop.inCategory(banner.category);
-              return Padding(
+              // Coverflow: side banners turn away in 3D as they leave.
+              final tile = Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5),
                 child: Pressable(
                   onTap: () =>
                       go(context, ProductListScreen.category(banner.category)),
-                  child: GlassTile(
+                  child: Tilt3D(
                     radius: 26,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: banner.colors,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  banner.kicker,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 1.6,
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  banner.title,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 21,
-                                    height: 1.25,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 11,
-                                    vertical: 7,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.16),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.24,
-                                      ),
+                    maxAngle: 0.08,
+                    child: GlassTile(
+                      radius: 26,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: banner.colors,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    banner.kicker,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 1.6,
+                                      color: Colors.white70,
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        banner.cta,
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    banner.title,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 21,
+                                      height: 1.25,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 11,
+                                      vertical: 7,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.16,
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.24,
                                         ),
                                       ),
-                                      const SizedBox(width: 6),
-                                      const Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 14,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          banner.cta,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        const Icon(
+                                          Icons.arrow_forward_rounded,
+                                          size: 14,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            if (items.isNotEmpty)
+                              // A slightly tilted, lifted product card.
+                              Transform.rotate(
+                                angle: -0.05,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.55,
+                                      ),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                        blurRadius: 24,
+                                        offset: const Offset(0, 12),
                                       ),
                                     ],
                                   ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(17),
+                                    child: SizedBox(
+                                      width:
+                                          MediaQuery.sizeOf(context).width < 360
+                                          ? 82
+                                          : 104,
+                                      height: 136,
+                                      child: ProductImage(
+                                        items.first.thumbnail,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          if (items.isNotEmpty)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child: SizedBox(
-                                width: MediaQuery.sizeOf(context).width < 360
-                                    ? 82
-                                    : 104,
-                                height: 140,
-                                child: ProductImage(items.first.thumbnail),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
+              );
+              if (Perspective.reduced(context)) return tile;
+              return AnimatedBuilder(
+                animation: _pc,
+                child: tile,
+                builder: (context, child) {
+                  final page = _pc.hasClients && _pc.position.haveDimensions
+                      ? _pc.page ?? 0
+                      : 0.0;
+                  return Transform(
+                    alignment: Alignment.center,
+                    transform: Perspective.carousel(i - page, turn: 0.5),
+                    child: child,
+                  );
+                },
               );
             },
           ),
@@ -438,37 +487,41 @@ class _CategoryStrip extends StatelessWidget {
                   width: 70,
                   child: Column(
                     children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color.alphaBlend(
-                                c.color.withValues(alpha: 0.54),
-                                const Color(0xFF28223A),
-                              ),
-                              Color.alphaBlend(
-                                c.color.withValues(alpha: 0.28),
-                                const Color(0xFF191725),
+                      Tilt3D(
+                        radius: 18,
+                        maxAngle: 0.35,
+                        child: Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color.alphaBlend(
+                                  c.color.withValues(alpha: 0.54),
+                                  const Color(0xFF28223A),
+                                ),
+                                Color.alphaBlend(
+                                  c.color.withValues(alpha: 0.28),
+                                  const Color(0xFF191725),
+                                ),
+                              ],
+                            ),
+                            border: Border.all(
+                              color: c.color.withValues(alpha: 0.52),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: c.color.withValues(alpha: 0.25),
+                                blurRadius: 18,
+                                offset: const Offset(0, 5),
                               ),
                             ],
                           ),
-                          border: Border.all(
-                            color: c.color.withValues(alpha: 0.52),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: c.color.withValues(alpha: 0.25),
-                              blurRadius: 18,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
+                          child: Icon(c.icon, color: Colors.white, size: 26),
                         ),
-                        child: Icon(c.icon, color: Colors.white, size: 26),
                       ),
                       const SizedBox(height: 7),
                       Text(
@@ -537,50 +590,52 @@ class _FlashCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Pressable(
       onTap: () => openProduct(context, p, 'flash'),
-      child: SizedBox(
-        width: 150,
-        child: GlassTile(
-          radius: 22,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 140,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Hero(
-                        tag: 'flash-${p.id}',
-                        child: ProductImage(p.thumbnail),
+      child: Tilt3D(
+        child: SizedBox(
+          width: 150,
+          child: GlassTile(
+            radius: 22,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 140,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Hero(
+                          tag: 'flash-${p.id}',
+                          child: ProductImage(p.thumbnail),
+                        ),
                       ),
-                    ),
-                    Positioned(
-                      left: 8,
-                      top: 8,
-                      child: DiscountChip(p.discount),
-                    ),
-                  ],
+                      Positioned(
+                        left: 8,
+                        top: 8,
+                        child: DiscountChip(p.discount),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(11, 10, 11, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      p.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12.5),
-                    ),
-                    const SizedBox(height: 5),
-                    PriceTag(p, size: 14.5),
-                    const SizedBox(height: 9),
-                    RatingRow(p.rating),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(11, 10, 11, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        p.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12.5),
+                      ),
+                      const SizedBox(height: 5),
+                      PriceTag(p, size: 14.5),
+                      const SizedBox(height: 9),
+                      RatingRow(p.rating),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

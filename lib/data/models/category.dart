@@ -1,5 +1,6 @@
 /// MODULE: Category model — the fixed list of shop categories
-/// (English + Bangla name, icon and accent colour).
+/// (English + Bangla name, icon and accent colour). The products in each
+/// come from assets/data/products.json.
 library;
 
 import 'package:flutter/material.dart';
@@ -53,6 +54,13 @@ const categories = <CategoryInfo>[
     AppColors.gold,
   ),
   CategoryInfo(
+    'smartwatches',
+    'Smartwatch',
+    'স্মার্টওয়াচ',
+    Iconsax.watch_status,
+    AppColors.cyan,
+  ),
+  CategoryInfo(
     'fragrances',
     'Fragrance',
     'সুগন্ধি',
@@ -73,9 +81,9 @@ const categories = <CategoryInfo>[
     Iconsax.lovely,
     AppColors.mint,
   ),
-  CategoryInfo('mens-shirts', 'Men', 'পুরুষ', Iconsax.man, AppColors.cyan),
+  CategoryInfo('mens-fashion', 'Men', 'পুরুষ', Iconsax.man, AppColors.cyan),
   CategoryInfo(
-    'womens-dresses',
+    'womens-fashion',
     'Women',
     'নারী',
     Iconsax.woman,
@@ -96,59 +104,6 @@ const categories = <CategoryInfo>[
     AppColors.gold,
   ),
   CategoryInfo('mens-shoes', 'Shoes', 'জুতা', Iconsax.ruler, AppColors.indigo),
-  CategoryInfo('womens-shoes', 'Heels', 'হিল', Iconsax.star, AppColors.magenta),
-  CategoryInfo(
-    'womens-watches',
-    'Her Watch',
-    'নারীর ঘড়ি',
-    Iconsax.watch_status,
-    AppColors.rose,
-  ),
-  CategoryInfo(
-    'sunglasses',
-    'Sunglasses',
-    'সানগ্লাস',
-    Iconsax.glass,
-    AppColors.cyan,
-  ),
-  CategoryInfo('tops', 'Tops', 'টপস', Iconsax.woman, AppColors.violetLight),
-  CategoryInfo(
-    'groceries',
-    'Groceries',
-    'মুদি',
-    Iconsax.shopping_cart,
-    AppColors.mint,
-  ),
-  CategoryInfo(
-    'kitchen-accessories',
-    'Kitchen',
-    'রান্নাঘর',
-    Iconsax.coffee,
-    AppColors.gold,
-  ),
-  CategoryInfo(
-    'furniture',
-    'Furniture',
-    'ফার্নিচার',
-    Iconsax.lamp,
-    AppColors.indigo,
-  ),
-  CategoryInfo(
-    'home-decoration',
-    'Decor',
-    'সাজসজ্জা',
-    Iconsax.home_2,
-    AppColors.magenta,
-  ),
-  CategoryInfo(
-    'sports-accessories',
-    'Sports',
-    'খেলাধুলা',
-    Iconsax.medal,
-    AppColors.mint,
-  ),
-  CategoryInfo('motorcycle', 'Bikes', 'বাইক', Iconsax.flash, AppColors.rose),
-  CategoryInfo('vehicle', 'Cars', 'গাড়ি', Iconsax.car, AppColors.cyan),
 ];
 
 CategoryInfo categoryOf(String id) =>

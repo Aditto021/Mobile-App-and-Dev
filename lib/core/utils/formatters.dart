@@ -18,5 +18,12 @@ String taka(int v) {
   return '৳$buf,$last3';
 }
 
+/// Short counts for ratings and sales: 950 → "950", 1234 → "1.2k".
+String compact(int n) {
+  if (n < 1000) return '$n';
+  final k = n / 1000;
+  return '${k >= 10 ? k.round() : k.toStringAsFixed(1).replaceAll('.0', '')}k';
+}
+
 /// "1 item", "3 items".
 String plural(int n, String word) => '$n $word${n == 1 ? '' : 's'}';

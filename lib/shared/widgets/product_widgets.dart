@@ -18,6 +18,7 @@ import '../../data/models/models.dart';
 import '../../data/state/shop_state.dart';
 import 'fly_to_cart.dart';
 import 'glass_widgets.dart';
+import 'motion_3d.dart';
 
 /// A neutral photo well that keeps product colours and outlines clear.
 class ProductImage extends StatelessWidget {
@@ -170,7 +171,7 @@ class RatingRow extends StatelessWidget {
           Text('  ·  ', style: Txt.small.copyWith(color: AppColors.textFaint)),
           Flexible(
             child: Text(
-              '${sold! >= 1000 ? '${(sold! / 1000).toStringAsFixed(1)}k' : sold} sold',
+              '${compact(sold!)} sold',
               overflow: TextOverflow.ellipsis,
               style: Txt.small.copyWith(
                 color: lightSurface
@@ -286,79 +287,85 @@ class _ProductCardState extends State<ProductCard> {
     return Pressable(
       onTap: widget.onTap,
       scale: 0.985,
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFCF8),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: const Color(0xBFE9DDF4)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.16),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AspectRatio(
-              aspectRatio: 1,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Hero(
-                      tag: '${widget.heroPrefix}-${p.id}',
-                      child: KeyedSubtree(
-                        key: _imageKey,
-                        child: ProductImage(p.thumbnail, padding: 16),
+      child: Tilt3D(
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFCF8),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xBFE9DDF4)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AspectRatio(
+                aspectRatio: 1,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Hero(
+                        tag: '${widget.heroPrefix}-${p.id}',
+                        child: KeyedSubtree(
+                          key: _imageKey,
+                          child: ProductImage(p.thumbnail, padding: 16),
+                        ),
                       ),
                     ),
-                  ),
-                  if (p.discount > 0)
+                    if (p.discount > 0)
+                      Positioned(
+                        left: 9,
+                        top: 9,
+                        child: DiscountChip(p.discount),
+                      ),
                     Positioned(
-                      left: 9,
-                      top: 9,
-                      child: DiscountChip(p.discount),
+                      right: 7,
+                      top: 7,
+                      child: HeartButton(p, size: 40),
                     ),
-                  Positioned(right: 7, top: 7, child: HeartButton(p, size: 40)),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    p.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      height: 1.35,
-                      color: Color(0xFF292337),
-                    ),
-                  ),
-                  const SizedBox(height: 7),
-                  RatingRow(p.rating, sold: p.sold, lightSurface: true),
-                  const SizedBox(height: 9),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: PriceTag(p, size: 16, lightSurface: true),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      p.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        height: 1.35,
+                        color: Color(0xFF292337),
                       ),
-                      const SizedBox(width: 4),
-                      AddButton(product: p, sourceKey: _imageKey),
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(height: 7),
+                    RatingRow(p.rating, sold: p.sold, lightSurface: true),
+                    const SizedBox(height: 9),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: PriceTag(p, size: 16, lightSurface: true),
+                        ),
+                        const SizedBox(width: 4),
+                        AddButton(product: p, sourceKey: _imageKey),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -414,13 +421,25 @@ extension Entrance on Widget {
           MediaQuery.accessibleNavigationOf(context)) {
         return this;
       }
-      return animate(delay: (20 * (index % 4)).ms)
-          .fadeIn(duration: 220.ms, curve: Curves.easeOut)
+      // A short 3D rise: the item swings up from a slight backward tilt.
+      return animate(delay: (45 * (index % 6)).ms)
+          .fadeIn(duration: 320.ms, curve: Curves.easeOut)
           .slideY(
-            begin: 0.025,
+            begin: 0.06,
             end: 0,
-            duration: 260.ms,
+            duration: 520.ms,
             curve: Curves.easeOutCubic,
+          )
+          .custom(
+            duration: 560.ms,
+            curve: Curves.easeOutCubic,
+            builder: (_, v, child) => Transform(
+              alignment: Alignment.bottomCenter,
+              transform: Perspective.camera()
+                ..rotateX((1 - v) * 0.45)
+                ..scaleByDouble(0.94 + 0.06 * v, 0.94 + 0.06 * v, 1, 1),
+              child: child,
+            ),
           );
     },
   );

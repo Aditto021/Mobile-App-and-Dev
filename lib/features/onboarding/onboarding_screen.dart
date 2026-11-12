@@ -38,7 +38,7 @@ class OnboardPage {
 final _pages = [
   OnboardPage(
     'Shop the whole\nuniverse',
-    'Phones, fashion, beauty, groceries — over 190 hand-picked products in one place.',
+    'Phones, gadgets, fashion and beauty — over 200 hand-picked products in one place.',
     Iconsax.shopping_bag,
     [
       Iconsax.mobile,

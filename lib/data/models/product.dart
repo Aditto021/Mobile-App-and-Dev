@@ -1,5 +1,7 @@
 /// MODULE: Product model — one catalogue item loaded from
-/// assets/data/products.json (prices in Taka, discount in percent).
+/// assets/data/products.json (built by tool/build_catalogue.mjs from real
+/// Bangladeshi market listings): prices in Taka, discount in percent, with
+/// the seller, sales and rating figures.
 library;
 
 import 'review.dart';
@@ -16,7 +18,19 @@ class Product {
   final String brand;
   final String thumbnail;
   final List<String> images;
+
+  /// Written customer reviews, if any.
   final List<Review> reviews;
+
+  /// Total number of ratings (can be more than [reviews] holds).
+  final int reviewCount;
+
+  /// Units sold, or 0 when there is no figure.
+  final int soldCount;
+
+  /// The shop selling it, and where it ships from.
+  final String seller;
+  final String location;
 
   const Product({
     required this.id,
@@ -31,13 +45,22 @@ class Product {
     required this.thumbnail,
     required this.images,
     required this.reviews,
+    this.reviewCount = 0,
+    this.soldCount = 0,
+    this.seller = '',
+    this.location = '',
   });
 
   int get originalPrice =>
       discount <= 0 ? price : (price * 100 / (100 - discount)).round();
 
-  /// Deterministic "sold" count so the number is stable between launches.
-  int get sold => 120 + (id * 7919) % 4800;
+  /// Units sold: the real figure when there is one, otherwise a stable
+  /// estimate so the number doesn't change between launches.
+  int get sold => soldCount > 0 ? soldCount : 20 + (id * 7919) % 480;
+
+  /// Ratings to show next to the stars.
+  int get ratings =>
+      reviewCount > reviews.length ? reviewCount : reviews.length;
 
   factory Product.fromJson(Map<String, dynamic> j) => Product(
     id: j['id'] as int,
@@ -54,5 +77,9 @@ class Product {
     reviews: (j['reviews'] as List)
         .map((r) => Review.fromJson(r as Map<String, dynamic>))
         .toList(),
+    reviewCount: (j['reviewCount'] as num?)?.toInt() ?? 0,
+    soldCount: (j['sold'] as num?)?.toInt() ?? 0,
+    seller: j['seller'] as String? ?? '',
+    location: j['location'] as String? ?? '',
   );
 }

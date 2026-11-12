@@ -1,4 +1,5 @@
 import 'package:feriwala/core/config/brand_config.dart';
+import 'package:feriwala/data/models/models.dart';
 import 'package:feriwala/data/state/shop_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,6 +43,26 @@ void main() {
       shop.inCategory(category).every((p) => p.category == category),
       isTrue,
     );
+    shop.dispose();
+  });
+
+  test('catalogue has 200+ products filling every category', () async {
+    final shop = Shop();
+    await shop.load();
+    final products = shop.products;
+    expect(products.length, greaterThanOrEqualTo(200));
+    expect(products.map((p) => p.id).toSet(), hasLength(products.length));
+    for (final p in products) {
+      expect(categories.map((c) => c.id), contains(p.category));
+      expect(p.price, greaterThan(0));
+      expect(p.discount, inInclusiveRange(0, 99));
+      expect(p.thumbnail, startsWith('https://'));
+      expect(p.thumbnail, isNot(contains('dummyjson')));
+      expect(p.images, isNotEmpty);
+    }
+    for (final c in categories) {
+      expect(shop.inCategory(c.id), isNotEmpty, reason: '${c.id} is empty');
+    }
     shop.dispose();
   });
 

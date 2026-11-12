@@ -16,6 +16,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/state/shop_state.dart';
 import '../../shared/widgets/fly_to_cart.dart';
 import '../../shared/widgets/glass_widgets.dart';
+import '../../shared/widgets/motion_3d.dart';
 import '../account/account_screen.dart';
 import '../cart/cart_screen.dart';
 import '../categories/categories_screen.dart';
@@ -103,10 +104,25 @@ class _ShellState extends State<Shell> {
                     opacity: i == _tab ? 1 : 0,
                     duration: const Duration(milliseconds: 320),
                     curve: Curves.easeOut,
-                    child: AnimatedScale(
-                      scale: i == _tab ? 1 : 0.97,
-                      duration: const Duration(milliseconds: 420),
+                    // Tabs swing into place with a slight 3D tilt.
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(end: i == _tab ? 1 : 0),
+                      duration: const Duration(milliseconds: 460),
                       curve: Curves.easeOutCubic,
+                      builder: (context, v, child) => Transform(
+                        alignment: Alignment.topCenter,
+                        transform: Perspective.reduced(context) || v == 1
+                            ? Matrix4.identity()
+                            : (Perspective.camera()
+                                ..rotateX((1 - v) * 0.10)
+                                ..scaleByDouble(
+                                  0.96 + 0.04 * v,
+                                  0.96 + 0.04 * v,
+                                  1,
+                                  1,
+                                )),
+                        child: child,
+                      ),
                       child: TickerMode(
                         enabled: i == _tab,
                         child: _visited.contains(i)
@@ -199,15 +215,18 @@ class _NavBar extends StatelessWidget {
                     children: [
                       for (var i = 0; i < _items.length; i++)
                         Expanded(
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => onTap(i),
-                            child: _NavIcon(
-                              icon: _items[i].$1,
-                              label: _items[i].$2,
-                              active: i == index,
-                              badge: i == 2 ? count : (i == 3 ? wish : 0),
-                              isCart: i == 2,
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => onTap(i),
+                              child: _NavIcon(
+                                icon: _items[i].$1,
+                                label: _items[i].$2,
+                                active: i == index,
+                                badge: i == 2 ? count : (i == 3 ? wish : 0),
+                                isCart: i == 2,
+                              ),
                             ),
                           ),
                         ),

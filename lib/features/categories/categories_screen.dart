@@ -14,6 +14,7 @@ import '../../data/models/models.dart';
 import '../../data/state/shop_state.dart';
 import '../../shared/widgets/common_widgets.dart';
 import '../../shared/widgets/glass_widgets.dart';
+import '../../shared/widgets/motion_3d.dart';
 import '../../shared/widgets/product_widgets.dart';
 import '../home/home_screen.dart';
 import '../products/product_list_screen.dart';
@@ -248,31 +249,37 @@ class _MiniCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Pressable(
       onTap: () => openProduct(context, p, 'cat'),
-      child: GlassTile(
+      child: Tilt3D(
         radius: 20,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Hero(tag: 'cat-${p.id}', child: ProductImage(p.thumbnail)),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    p.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  const SizedBox(height: 3),
-                  PriceTag(p, size: 13.5),
-                ],
+        child: GlassTile(
+          radius: 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Hero(
+                  tag: 'cat-${p.id}',
+                  child: ProductImage(p.thumbnail),
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      p.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 3),
+                    PriceTag(p, size: 13.5),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
