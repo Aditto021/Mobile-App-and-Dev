@@ -47,7 +47,7 @@ try {
         packageId = 'com.feriwala.app'; versionName = $versionName; versionCode = $versionCode
         apkUrl = "https://github.com/Aditto021/Mobile-App-and-Dev/releases/download/v$versionName/$name"
         sha256 = $hash; sizeBytes = (Get-Item -LiteralPath $destination).Length
-        releaseNotes = 'A refined visual design, smoother startup, improved accessibility, and reliability fixes.'
+        releaseNotes = '210 real products from Bangladeshi shops, online accounts that sync your cart and wishlist, server-checked orders, account deletion and a privacy policy.'
     }
     [System.IO.File]::WriteAllText((Join-Path $OutputDirectory 'feriwala-update.json'), ($metadata | ConvertTo-Json), [System.Text.UTF8Encoding]::new($false))
     # Delete only obsolete distributable files in this exact output directory.
